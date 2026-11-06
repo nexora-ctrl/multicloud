@@ -81,10 +81,12 @@ export function renderHomePage() {
     </section>
 
     <!-- 7. BAGIAN KATEGORI LAYANAN -->
-    <section class="section" style="background-color: var(--bg-surface-secondary);" aria-label="Kategori Layanan">
-      <div class="container">
+    <section class="section section-categories-showcase" aria-label="Kategori Layanan">
+      <div class="category-bg-layer"></div>
+      <div class="category-overlay-layer"></div>
+      <div class="container" style="position: relative; z-index: 2;">
         <div class="section-header">
-          <div class="section-tag">
+          <div class="section-tag" style="background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px);">
             ${icons.layers('icon', 14, 2)}
             <span>Ekosistem Solusi</span>
           </div>

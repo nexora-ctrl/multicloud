@@ -91,21 +91,76 @@
   color: var(--color-primary);
 }
 
+/* Section Showcase Categories with Blurred Background */
+.section-categories-showcase {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--bg-surface-secondary);
+}
+
+.category-bg-layer {
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  right: -20px;
+  bottom: -20px;
+  background-image: url('../public/images/bg1.jpeg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  filter: blur(14px);
+  -webkit-filter: blur(14px);
+  transform: scale(1.06);
+  z-index: 0;
+  opacity: 0.55;
+}
+
+[data-theme="dark"] .category-bg-layer {
+  opacity: 0.28;
+}
+
+.category-overlay-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.72) 0%, rgba(241, 245, 249, 0.82) 100%);
+  z-index: 1;
+}
+
+[data-theme="dark"] .category-overlay-layer {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.78) 0%, rgba(2, 6, 23, 0.88) 100%);
+}
+
 /* Category Grid Card */
 .category-card {
   padding: 2rem;
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
   cursor: pointer;
-  box-shadow: var(--card-shadow);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] .category-card {
+  background-color: rgba(30, 41, 59, 0.88);
+  border-color: rgba(51, 65, 85, 0.8);
 }
 
 .category-card:hover {
   border-color: var(--color-primary);
+  background-color: #ffffff;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .category-card:hover {
+  background-color: rgba(30, 41, 59, 0.98);
 }
 
 .category-card-top {
