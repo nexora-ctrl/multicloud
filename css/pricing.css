@@ -1,0 +1,233 @@
+/**
+ * MultiCloud Pricing Page Styles
+ */
+
+.pricing-toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 3.5rem;
+}
+
+.pricing-toggle-label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.pricing-toggle-label.active {
+  color: var(--text-primary);
+}
+
+.pricing-switch {
+  position: relative;
+  width: 52px;
+  height: 28px;
+  background-color: var(--border-color);
+  border-radius: var(--radius-full);
+  padding: 3px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.pricing-switch.active {
+  background-color: var(--color-primary);
+}
+
+.switch-circle {
+  width: 22px;
+  height: 22px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+
+.pricing-switch.active .switch-circle {
+  transform: translateX(24px);
+}
+
+.discount-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.625rem;
+  background-color: var(--color-success-subtle);
+  color: var(--color-success);
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+/* Pricing Grid */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-bottom: 5rem;
+  align-items: stretch;
+}
+
+.pricing-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: var(--card-shadow);
+  transition: border-color 0.15s ease;
+}
+
+.pricing-card.popular {
+  border-color: var(--color-primary);
+  background-color: var(--bg-surface);
+  box-shadow: 0 4px 20px -2px rgba(37, 99, 235, 0.12);
+}
+
+.popular-banner {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 1rem;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.pricing-header {
+  margin-bottom: 1.5rem;
+}
+
+.plan-name {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.plan-description {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  min-height: 42px;
+}
+
+.pricing-amount-block {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.price-currency {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.price-number {
+  font-size: 2.75rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+.price-freq {
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+}
+
+.pricing-billing-note {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin-bottom: 1.75rem;
+}
+
+.pricing-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin-bottom: 1.75rem;
+}
+
+.pricing-features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 2.25rem;
+  flex-grow: 1;
+}
+
+.pricing-feature-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.pricing-feature-row.excluded {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.pricing-feature-row .icon-check {
+  color: var(--color-success);
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.pricing-feature-row .icon-cross {
+  color: var(--text-muted);
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+/* Pricing Matrix Table */
+.matrix-section {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 3rem;
+  box-shadow: var(--card-shadow);
+}
+
+.matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.matrix-table th,
+.matrix-table td {
+  padding: 1.125rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.9375rem;
+}
+
+.matrix-table th {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.matrix-table th:first-child,
+.matrix-table td:first-child {
+  padding-left: 0;
+}
+
+.matrix-cat-row th {
+  background-color: var(--bg-surface-secondary);
+  color: var(--color-primary);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.75rem 1.25rem;
+}
+
