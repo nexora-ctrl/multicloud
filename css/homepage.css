@@ -8,11 +8,187 @@
   text-align: center;
   position: relative;
   background-color: var(--bg-body);
+  overflow: hidden;
+}
+
+/* Floating Tech & Geometric Elements Container */
+.hero-floating-elements {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none; /* Agar tidak menghalangi klik atau kursor pada teks utama */
+  z-index: 1;
+}
+
+.floating-tech-item {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Float Left 1: Server Badge */
+.float-left-1 {
+  top: 22%;
+  left: 4.5%;
+  animation: floatSlowLeft 6s ease-in-out infinite;
+}
+
+/* Float Left 2: 3D Isometric Cube */
+.float-left-2 {
+  bottom: 24%;
+  left: 7%;
+  animation: floatSlowAlt 8s ease-in-out infinite;
+}
+
+/* Float Right 1: AI Compute Badge */
+.float-right-1 {
+  top: 26%;
+  right: 4.5%;
+  animation: floatSlowRight 7s ease-in-out infinite;
+}
+
+/* Float Right 2: 3D Isometric Octahedron */
+.float-right-2 {
+  bottom: 22%;
+  right: 7%;
+  animation: floatSlowAlt2 9s ease-in-out infinite;
+}
+
+/* Tech Card Badge Styling */
+.tech-card-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+  text-align: left;
+}
+
+[data-theme="dark"] .tech-card-badge {
+  background: rgba(30, 41, 59, 0.82);
+  border-color: rgba(51, 65, 85, 0.7);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+.tech-icon-box {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-primary-subtle);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tech-icon-box.accent {
+  background-color: rgba(14, 165, 233, 0.15);
+  color: #0284c7;
+}
+
+.tech-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.tech-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.tech-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 2px;
+}
+
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--color-success);
+  display: inline-block;
+  box-shadow: 0 0 6px var(--color-success);
+}
+
+.pulse-dot.green {
+  background-color: #10b981;
+  box-shadow: 0 0 6px #10b981;
+}
+
+/* Geometric SVG 3D Nodes */
+.iso-cube, .iso-octa {
+  filter: drop-shadow(0 8px 16px rgba(37, 99, 235, 0.12));
+}
+
+/* Keyframes for Gentle Floating */
+@keyframes floatSlowLeft {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(1.5deg);
+  }
+}
+
+@keyframes floatSlowRight {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(-1.5deg);
+  }
+}
+
+@keyframes floatSlowAlt {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translateY(-10px) rotate(4deg) scale(1.03);
+  }
+}
+
+@keyframes floatSlowAlt2 {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translateY(-11px) rotate(-3deg) scale(1.03);
+  }
+}
+
+/* Responsive Hide on Small Screen to prevent overlapping */
+@media (max-width: 1100px) {
+  .float-left-1, .float-right-1 {
+    display: none;
+  }
+}
+
+@media (max-width: 850px) {
+  .hero-floating-elements {
+    display: none;
+  }
 }
 
 .hero-content {
   max-width: 860px;
   margin: 0 auto;
+  position: relative;
+  z-index: 2;
 }
 
 .hero-pill {

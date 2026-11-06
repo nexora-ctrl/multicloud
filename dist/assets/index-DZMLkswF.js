@@ -618,6 +618,79 @@
   `),n.document.close()}function ue(){let e=e=>new Intl.NumberFormat(`id-ID`,{style:`currency`,currency:`IDR`,maximumFractionDigits:0}).format(e),n=x.filter(e=>e.popular).slice(0,4),r=C.filter(e=>e.badge===`Terlaris`||e.badge===`Populer`).slice(0,3);return`
     <!-- 4, 5, 6. BAGIAN HERO (HERO SECTION) -->
     <section class="hero-section" aria-label="Bagian Utama Beranda">
+      <!-- Elemen Animasi Geometri & Tech Melayang di Kiri & Kanan -->
+      <div class="hero-floating-elements" aria-hidden="true">
+        <!-- Sisi Kiri: Server Rack 3D Tech + Isometric Cube Node -->
+        <div class="floating-tech-item float-left-1">
+          <div class="tech-card-badge">
+            <div class="tech-icon-box">
+              ${t.server(`icon`,18,2)}
+            </div>
+            <div class="tech-meta">
+              <span class="tech-label">Tier-4 NVMe Server</span>
+              <span class="tech-sub"><span class="pulse-dot"></span> 99.99% Online</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="floating-tech-item float-left-2">
+          <svg class="iso-cube" width="64" height="74" viewBox="0 0 64 74" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="32,2 62,19 32,36 2,19" fill="url(#cube-top)" stroke="rgba(37,99,235,0.4)" stroke-width="1.5"/>
+            <polygon points="2,19 32,36 32,72 2,55" fill="url(#cube-left)" stroke="rgba(37,99,235,0.4)" stroke-width="1.5"/>
+            <polygon points="62,19 32,36 32,72 62,55" fill="url(#cube-right)" stroke="rgba(37,99,235,0.4)" stroke-width="1.5"/>
+            <defs>
+              <linearGradient id="cube-top" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="var(--color-primary)" stop-opacity="0.35"/>
+                <stop offset="100%" stop-color="var(--color-primary)" stop-opacity="0.15"/>
+              </linearGradient>
+              <linearGradient id="cube-left" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="var(--color-primary)" stop-opacity="0.5"/>
+                <stop offset="100%" stop-color="var(--color-primary)" stop-opacity="0.1"/>
+              </linearGradient>
+              <linearGradient id="cube-right" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="var(--color-primary)" stop-opacity="0.65"/>
+                <stop offset="100%" stop-color="var(--color-primary)" stop-opacity="0.2"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+
+        <!-- Sisi Kanan: AI Engine Node + Floating Gateway Pill -->
+        <div class="floating-tech-item float-right-1">
+          <div class="tech-card-badge">
+            <div class="tech-icon-box accent">
+              ${t.sparkles(`icon`,18,2)}
+            </div>
+            <div class="tech-meta">
+              <span class="tech-label">AI Neural Compute</span>
+              <span class="tech-sub"><span class="pulse-dot green"></span> Latency &lt; 15ms</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="floating-tech-item float-right-2">
+          <svg class="iso-octa" width="56" height="66" viewBox="0 0 56 66" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="28,2 54,26 28,40 2,26" fill="url(#octa-top)" stroke="rgba(14,165,233,0.45)" stroke-width="1.5"/>
+            <polygon points="2,26 28,40 28,64 2,42" fill="url(#octa-left)" stroke="rgba(14,165,233,0.45)" stroke-width="1.5"/>
+            <polygon points="54,26 28,40 28,64 54,42" fill="url(#octa-right)" stroke="rgba(14,165,233,0.45)" stroke-width="1.5"/>
+            <defs>
+              <linearGradient id="octa-top" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.4"/>
+                <stop offset="100%" stop-color="#0284c7" stop-opacity="0.15"/>
+              </linearGradient>
+              <linearGradient id="octa-left" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#0284c7" stop-opacity="0.5"/>
+                <stop offset="100%" stop-color="#0369a1" stop-opacity="0.15"/>
+              </linearGradient>
+              <linearGradient id="octa-right" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#0369a1" stop-opacity="0.65"/>
+                <stop offset="100%" stop-color="#0284c7" stop-opacity="0.2"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+      </div>
+
       <div class="container hero-content">
         <div class="hero-pill">
           <span class="hero-pill-tag">BARU</span>
