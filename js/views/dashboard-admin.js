@@ -26,7 +26,10 @@ export function renderAdminDashboard(tab = 'overview') {
   activeAdminTab = tab;
   const state = store.getState();
   const formatRp = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
-  const isSupabaseLive = supabaseService.isConfigured();
+  const dbStatus = supabaseService.getConnectionStatus();
+  const isSupabaseLive = dbStatus === 'connected';
+  const sidebarStatusLabel = dbStatus === 'connected' ? 'Aktif' : dbStatus === 'paused' ? 'Terputus' : 'Lokal';
+  const sidebarStatusClass = dbStatus === 'connected' ? 'success' : dbStatus === 'paused' ? 'danger' : 'warning';
 
   return `
     <div class="dashboard-container">
@@ -71,8 +74,8 @@ export function renderAdminDashboard(tab = 'overview') {
             <button class="sidebar-nav-item ${activeAdminTab === 'supabase' ? 'active' : ''}" data-admin-tab="supabase">
               ${icons.database('icon', 18, 2)}
               <span>Basis Data Supabase</span>
-              <span class="status-pill ${isSupabaseLive ? 'success' : 'warning'}" style="font-size: 0.625rem; padding: 0.1rem 0.45rem; margin-left: auto; flex-shrink: 0; white-space: nowrap;">
-                ${isSupabaseLive ? 'Aktif' : 'Lokal'}
+              <span class="status-pill ${sidebarStatusClass}" style="font-size: 0.625rem; padding: 0.1rem 0.45rem; margin-left: auto; flex-shrink: 0; white-space: nowrap;">
+                ${sidebarStatusLabel}
               </span>
             </button>
             <button class="sidebar-nav-item ${activeAdminTab === 'content' ? 'active' : ''}" data-admin-tab="content">
@@ -96,8 +99,57 @@ export function renderAdminDashboard(tab = 'overview') {
 
       <!-- Konten Utama Dasbor Admin -->
       <main class="dashboard-content" id="admin-content-area">
+        ${renderSupabaseAlertBanner(dbStatus)}
         ${renderAdminTabContent(activeAdminTab, state)}
       </main>
+    </div>
+  `;
+}
+
+function renderSupabaseAlertBanner(dbStatus) {
+  if (dbStatus === 'connected') return '';
+
+  if (dbStatus === 'paused') {
+    return `
+      <div class="auth-alert auth-alert-error" role="alert" style="margin-bottom: 1.5rem; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div style="display: flex; align-items: flex-start; gap: 0.65rem; flex: 1 1 320px;">
+          ${icons.alertCircle('icon', 20, 2)}
+          <div>
+            <strong style="display: block; font-size: 0.9375rem; margin-bottom: 0.2rem;">Peringatan: Koneksi Basis Data Supabase Terputus atau Di-Pause</strong>
+            <span style="font-size: 0.8125rem; line-height: 1.5;">
+              Peladen Supabase tidak merespons. Pada paket Free Tier, Supabase otomatis menonaktifkan (<em>pause</em>) proyek setelah 7 hari tanpa aktivitas. Buka <strong>supabase.com/dashboard</strong> lalu klik <strong>Restore project</strong> agar pesanan online kembali masuk.
+            </span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <a href="https://supabase.com/dashboard" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="background: var(--bg-surface);">
+            ${icons.externalLink('icon', 14, 2)}
+            <span>Buka Supabase</span>
+          </a>
+          <button type="button" class="btn btn-primary btn-sm" id="admin-banner-retry-supabase-btn">
+            ${icons.refresh('icon', 14, 2)}
+            <span>Coba Sambungkan Ulang</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="auth-alert auth-alert-info" role="status" style="margin-bottom: 1.5rem; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <div style="display: flex; align-items: flex-start; gap: 0.65rem; flex: 1 1 320px;">
+        ${icons.infoCircle('icon', 20, 2)}
+        <div>
+          <strong style="display: block; font-size: 0.9375rem; margin-bottom: 0.2rem;">Basis Data Supabase Belum Terpasang (Mode Lokal Aktif)</strong>
+          <span style="font-size: 0.8125rem; line-height: 1.5;">
+            Pesanan hanya tersimpan di peramban masing-masing. Pasang Project URL dan Anon Public Key Supabase aktif agar seluruh pesanan user online otomatis masuk ke Panel Admin.
+          </span>
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary btn-sm" id="admin-banner-goto-supabase-btn">
+        ${icons.database('icon', 14, 2)}
+        <span>Atur Supabase</span>
+      </button>
     </div>
   `;
 }
@@ -573,7 +625,7 @@ export function setupAdminDashboardEvents() {
       activeAdminTab = tab;
       const content = document.getElementById('admin-content-area');
       if (content) {
-        content.innerHTML = renderAdminTabContent(tab, store.getState());
+        content.innerHTML = renderSupabaseAlertBanner(supabaseService.getConnectionStatus()) + renderAdminTabContent(tab, store.getState());
         setupAdminSubEvents(tab);
       }
     };
@@ -591,6 +643,31 @@ export function setupAdminDashboardEvents() {
 }
 
 function setupAdminSubEvents(tab) {
+  const retryBannerBtn = document.getElementById('admin-banner-retry-supabase-btn');
+  if (retryBannerBtn) {
+    retryBannerBtn.onclick = async () => {
+      retryBannerBtn.disabled = true;
+      retryBannerBtn.textContent = 'Menguji...';
+      const ok = await supabaseService.retryConnection();
+      if (ok) {
+        await store.syncWithSupabase();
+      }
+      const content = document.getElementById('admin-content-area');
+      if (content) {
+        content.innerHTML = renderSupabaseAlertBanner(supabaseService.getConnectionStatus()) + renderAdminTabContent(activeAdminTab, store.getState());
+        setupAdminSubEvents(activeAdminTab);
+      }
+    };
+  }
+
+  const gotoSupaBtn = document.getElementById('admin-banner-goto-supabase-btn');
+  if (gotoSupaBtn) {
+    gotoSupaBtn.onclick = () => {
+      const supaNav = document.querySelector('.dashboard-sidebar .sidebar-nav-item[data-admin-tab="supabase"]');
+      if (supaNav) supaNav.click();
+    };
+  }
+
   if (tab === 'customers') {
     const refreshBtn = document.getElementById('admin-refresh-customers-btn');
     const fetchCustomers = async () => {

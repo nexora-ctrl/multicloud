@@ -11,8 +11,8 @@ const CONFIG_KEY_ANON = 'multicloud_supabase_anon_key';
 const USERS_STORAGE_KEY = 'multicloud_registered_users_v1';
 const LEGACY_DEAD_HOST = 'hzamkkknabduqmdivcqd.supabase.co';
 
-const DEFAULT_URL = '';
-const DEFAULT_ANON_KEY = '';
+const DEFAULT_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) || '';
+const DEFAULT_ANON_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_ANON_KEY) || '';
 
 function isNetworkFetchError(err) {
   if (!err) return false;
@@ -41,7 +41,42 @@ class SupabaseService {
   constructor() {
     this.client = null;
     this.connectionFailed = false;
+    this.lastError = '';
     this.initClient();
+  }
+
+  getConnectionStatus() {
+    const { url, anonKey } = this.getConfig();
+    const hasCreds = Boolean(
+      url &&
+      !url.includes('YOUR_PROJECT_ID') &&
+      !url.includes(LEGACY_DEAD_HOST) &&
+      anonKey &&
+      !anonKey.includes('YOUR_SUPABASE_ANON_KEY')
+    );
+    if (!hasCreds) return 'unconfigured';
+    if (this.connectionFailed) return 'paused';
+    return 'connected';
+  }
+
+  async retryConnection() {
+    this.connectionFailed = false;
+    this.lastError = '';
+    await this.initClient();
+    if (!this.client) return false;
+    try {
+      const { error } = await this.client.from('orders').select('id').limit(1);
+      if (error && isNetworkFetchError(error)) {
+        this.connectionFailed = true;
+        this.lastError = error.message || 'Peladen Supabase tidak merespons';
+        return false;
+      }
+      return true;
+    } catch (e) {
+      this.connectionFailed = true;
+      this.lastError = e.message || 'Gagal menghubungi peladen Supabase';
+      return false;
+    }
   }
 
   getConfig() {
