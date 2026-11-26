@@ -99,7 +99,7 @@ export const servicesList = [
     id: 'srv-vps-dedicated-xl',
     category: 'cloud-hosting',
     name: 'VPS Cloud Dedicated Ultra XL',
-    tagline: 'Sumber Daya Terdedikasi Tertinggi & Otomasi Skala Penuh',
+    tagline: 'Sumber Daya Terdedikasi Tertinggi & OtomatisSkala Penuh',
     description: 'Peladen VPS Bare-Metal Dedicated kelas enterprise dengan performa maksimal, otomatisasi sistem penuh, jaminan SLA 99,99%, dan latensi super rendah.',
     startingPrice: 2944874,
     basePrice: 2600000,
@@ -110,7 +110,7 @@ export const servicesList = [
     popular: true,
     features: [
       'Sumber Daya CPU & RAM 100% Dedicated (Bukan Berbagi)',
-      'Termasuk Modul Otomasi (Automation Fee Terpadu)',
+      'Termasuk Modul Otomatis(Automation Fee Terpadu)',
       'Pajak PPN 11% Resmi (Faktur Pajak Sah Terverifikasi)',
       'Fitur Perpanjangan Otomatis (Auto-Renew) & Peringatan Masa Aktif',
       'Cetak Faktur PDF / Print Invoice Resmi Kapan Saja',
@@ -122,7 +122,7 @@ export const servicesList = [
       penyimpanan: '600GB Enterprise NVMe Gen4 Mirroring',
       jaringan: '10 Gbps Port Terdedikasi + 2 Alamat IPv4',
       dukungan: 'Teknisi Khusus Bersiaga 24/7 SLA 99,99%',
-      faktur: 'Mendukung Cetak Faktur Sah & Otomasi Tagihan'
+      faktur: 'Mendukung Cetak Faktur Sah & OtomatisTagihan'
     }
   },
   {

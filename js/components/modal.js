@@ -124,7 +124,7 @@ export function openServiceDetailModal(service) {
         itemTitle: service.name,
         category: service.category,
         packageName: service.id === 'srv-vps-dedicated-xl'
-          ? 'Paket Dedicated XL + Otomasi + PPN 11% (1 Bulan)'
+          ? 'Paket Dedicated XL + Otomatis+ PPN 11% (1 Bulan)'
           : 'Paket Standar ' + service.priceUnit,
         amount: service.startingPrice,
         breakdown: service.id === 'srv-vps-dedicated-xl' ? {
@@ -173,7 +173,7 @@ export function openOrderModal({ itemTitle, category, packageName, amount, break
               <span>${formatRp(breakdown.base)}</span>
             </div>
             <div style="display: flex; justify-content: space-between;">
-              <span>Biaya Otomasi (Automation Fee):</span>
+              <span>Biaya Otomatis(Automation Fee):</span>
               <span>${formatRp(breakdown.automation)}</span>
             </div>
             <div style="display: flex; justify-content: space-between;">
@@ -468,7 +468,7 @@ export function printInvoiceReceipt(order) {
           <div>
             <h1 class="brand" style="margin: 0; line-height: 1.2;">Multi<span>Cloud</span></h1>
             <div style="font-size: 13px; color: #475569; margin-top: 4px;">PT Multi Cloud Digital Nusantara</div>
-            <div style="font-size: 13px; color: #475569;">Surel: billing@multicloud.id | NPWP: 01.890.123.4-012.000</div>
+            <div style="font-size: 13px; color: #475569;">Surel: billing@multicloud.id</div>
           </div>
           <div class="inv-meta">
             <div style="font-family: monospace; font-size: 15px; font-weight: 700; color: #334155;">${order.invoiceNumber || order.id}</div>
