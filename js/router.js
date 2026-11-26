@@ -16,7 +16,6 @@ import { renderAboutPage } from './views/about.js';
 import { renderContactPage, setupContactPageEvents } from './views/contact.js';
 import { renderDocsPage } from './views/docs.js';
 import { renderAuthPage, setupAuthPageEvents } from './views/auth.js';
-import { renderAdminLoginPage, setupAdminLoginPageEvents } from './views/admin-login.js';
 import { renderUserDashboard, setupUserDashboardEvents } from './views/dashboard-user.js';
 import { renderAdminDashboard, setupAdminDashboardEvents } from './views/dashboard-admin.js';
 import { productsList } from './data/products.js';
@@ -92,13 +91,14 @@ export function handleRoute() {
     activeNavRoute = '/login';
     document.title = 'Pemulihan Kata Sandi - MultiCloud';
   } else if (routePart === '/admin-login' || routePart === '/admin/login') {
-    mainHtml = renderAdminLoginPage();
-    setupFn = setupAdminLoginPageEvents;
-    activeNavRoute = '/admin-login';
+    mainHtml = renderAuthPage('login');
+    setupFn = setupAuthPageEvents;
+    activeNavRoute = '/login';
+    document.title = 'Masuk ke Akun - MultiCloud';
   } else if (routePart.startsWith('/admin')) {
     // Proteksi Rute Administrator: Hanya dapat diakses jika masuk sebagai admin
     if (!store.isAdmin()) {
-      window.location.hash = '#/admin-login';
+      window.location.hash = '#/login';
       return;
     }
     const subTab = routePart.split('/')[2] || 'overview';

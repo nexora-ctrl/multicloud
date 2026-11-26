@@ -35,34 +35,33 @@ export function renderAdminLoginPage() {
         <!-- Form Masuk Admin -->
         <form id="admin-login-form">
           <div class="form-group">
-            <label class="form-label" for="admin-email">Alamat Surel Administrator</label>
-            <input class="form-input" id="admin-email" type="email" required placeholder="admin@multicloud.id" value="admin@multicloud.id" />
+            <label class="form-label" for="admin-email">Alamat Surel</label>
+            <input class="form-input" id="admin-email" type="email" autocomplete="email" required placeholder="nama@email.com" value="" />
           </div>
 
           <div class="form-group">
             <label class="form-label" for="admin-password">Kata Sandi</label>
-            <input class="form-input" id="admin-password" type="password" required placeholder="••••••••" value="admin12345" />
+            <div class="password-field-wrap">
+              <input class="form-input password-input" id="admin-password" type="password" autocomplete="current-password" required placeholder="Masukkan kata sandi" value="" />
+              <button type="button" class="password-toggle-btn" id="admin-password-toggle" data-target="admin-password" aria-label="Tampilkan kata sandi">
+                ${icons.eye('icon', 18, 2)}
+              </button>
+            </div>
           </div>
 
-          <div id="admin-login-error" style="display: none; padding: 0.75rem; border-radius: var(--radius-md); background-color: var(--color-danger-subtle); color: var(--color-danger); font-size: 0.8125rem; margin-bottom: 1rem; border: 1px solid rgba(239, 68, 68, 0.2);">
-            ${icons.alertCircle('icon', 16, 2)}
-            <span id="admin-error-text" style="margin-left: 0.35rem;"></span>
+          <div id="admin-login-error" class="auth-alert auth-alert-error" role="alert" style="display: none;">
+            ${icons.alertCircle('icon', 17, 2)}
+            <span id="admin-error-text"></span>
           </div>
 
           <button type="submit" class="btn btn-primary btn-block btn-lg" id="admin-submit-btn" style="background-color: var(--color-accent); border-color: var(--color-accent); margin-top: 1rem;">
             ${icons.shieldCheck('icon', 18, 2)}
-            <span>Masuk ke Dasbor Admin</span>
+            <span>Masuk ke Dasbor</span>
           </button>
         </form>
 
-        <!-- Informasi Bantuan & Kredensial Bawaan -->
+        <!-- Navigasi Bantuan -->
         <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); text-align: center; font-size: 0.8125rem; color: var(--text-muted);">
-          <div style="background-color: var(--bg-surface-secondary); padding: 0.75rem; border-radius: var(--radius-md); margin-bottom: 1rem; text-align: left; border: 1px solid var(--border-color);">
-            <strong style="display: block; color: var(--text-primary); margin-bottom: 0.25rem;">Kredensial Administrator Bawaan:</strong>
-            <div>Surel: <code style="color: var(--color-primary);">admin@multicloud.id</code></div>
-            <div>Kata Sandi: <code style="color: var(--color-primary);">admin12345</code></div>
-          </div>
-
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <a href="#/" style="color: var(--text-secondary); text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;">
               ${icons.chevronLeft('icon', 14, 2)} Kembali ke Beranda
@@ -80,6 +79,18 @@ export function setupAdminLoginPageEvents() {
   const errorBox = document.getElementById('admin-login-error');
   const errorText = document.getElementById('admin-error-text');
   const submitBtn = document.getElementById('admin-submit-btn');
+  const toggleBtn = document.getElementById('admin-password-toggle');
+
+  if (toggleBtn) {
+    toggleBtn.onclick = () => {
+      const pwdInput = document.getElementById('admin-password');
+      if (!pwdInput) return;
+      const isHidden = pwdInput.type === 'password';
+      pwdInput.type = isHidden ? 'text' : 'password';
+      toggleBtn.setAttribute('aria-label', isHidden ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
+      toggleBtn.innerHTML = isHidden ? icons.eyeOff('icon', 18, 2) : icons.eye('icon', 18, 2);
+    };
+  }
 
   if (form) {
     form.onsubmit = async (e) => {
@@ -100,7 +111,7 @@ export function setupAdminLoginPageEvents() {
         submitBtn.classList.remove('disabled');
         submitBtn.innerHTML = `${icons.shieldCheck('icon', 18, 2)} <span>Masuk ke Dasbor Admin</span>`;
         errorText.textContent = result.message || 'Surel atau kata sandi administrator salah.';
-        errorBox.style.display = 'block';
+        errorBox.style.display = 'flex';
       }
     };
   }

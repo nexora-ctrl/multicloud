@@ -99,14 +99,32 @@ export function renderPricingPage() {
           </p>
         </div>
 
-        <div style="overflow-x: auto;">
+        <div class="matrix-table-wrap">
           <table class="matrix-table">
             <thead>
               <tr>
-                <th style="width: 35%;">Fitur & Kapasitas Teknis</th>
-                <th style="width: 21%;">Pengembang Pemula</th>
-                <th style="width: 22%;">Bisnis Pro (Populer)</th>
-                <th style="width: 22%;">Korporat Skala Besar</th>
+                <th style="width: 32%;">Fitur &amp; Kapasitas Teknis</th>
+                <th style="width: 22%;">
+                  <div class="matrix-plan-head">
+                    <span>Pengembang Pemula</span>
+                    <span class="matrix-plan-price">Rp 95.000/bln</span>
+                  </div>
+                </th>
+                <th class="matrix-col-pro" style="width: 23%;">
+                  <div class="matrix-plan-head">
+                    <span class="matrix-plan-title-row">
+                      <span>Bisnis Pro</span>
+                      <span class="matrix-pop-pill">Populer</span>
+                    </span>
+                    <span class="matrix-plan-price">Rp 249.000/bln</span>
+                  </div>
+                </th>
+                <th style="width: 23%;">
+                  <div class="matrix-plan-head">
+                    <span>Korporat Skala Besar</span>
+                    <span class="matrix-plan-price">Rp 890.000/bln</span>
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -115,10 +133,10 @@ export function renderPricingPage() {
                   <th colspan="4">${group.category}</th>
                 </tr>
                 ${group.items.map(item => `
-                  <tr>
-                    <td style="font-weight: 500; color: var(--text-primary);">${item.name}</td>
+                  <tr class="matrix-item-row">
+                    <td class="matrix-feature-name">${item.name}</td>
                     <td>${item.starter}</td>
-                    <td style="font-weight: 600; color: var(--color-primary);">${item.pro}</td>
+                    <td class="matrix-col-pro matrix-pro-val">${item.pro}</td>
                     <td>${item.enterprise}</td>
                   </tr>
                 `).join('')}

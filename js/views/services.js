@@ -54,7 +54,7 @@ export function renderServicesPage(initialCategory = 'all') {
       </div>
 
       <!-- Kisi Layanan -->
-      <div class="grid-3" id="services-grid-container">
+      <div class="grid-2" id="services-grid-container">
         <!-- Dirender oleh fungsi updateServicesGrid -->
       </div>
     </div>
@@ -74,7 +74,7 @@ function updateServicesGrid() {
       srv.description.toLowerCase().includes(currentSearch.toLowerCase()) ||
       srv.tagline.toLowerCase().includes(currentSearch.toLowerCase());
     return matchCategory && matchSearch;
-  });
+  }).sort((a, b) => (a.startingPrice || 0) - (b.startingPrice || 0));
 
   if (filtered.length === 0) {
     container.innerHTML = `

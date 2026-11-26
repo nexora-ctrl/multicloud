@@ -120,17 +120,19 @@ export function openServiceDetailModal(service) {
   if (orderBtn) {
     orderBtn.onclick = () => {
       closeModal();
+      const isDedicatedVps = service.id.startsWith('srv-vps-dedicated-');
+      const tierLabel = service.tier || service.id.replace('srv-vps-dedicated-', '').toUpperCase();
       openOrderModal({
         itemTitle: service.name,
         category: service.category,
-        packageName: service.id === 'srv-vps-dedicated-xl'
-            ? 'Paket Dedicated XL + Otomatis + PPN 11% (1 Bulan)'
-            : 'Paket Standar ' + service.priceUnit,
+        packageName: isDedicatedVps
+          ? `Paket Dedicated ${tierLabel} + Otomatis + PPN 11% (1 Bulan)`
+          : 'Paket Standar ' + service.priceUnit,
         amount: service.startingPrice,
-        breakdown: service.id === 'srv-vps-dedicated-xl' ? {
-          base: service.basePrice || 2600000,
-          automation: service.automationFee || 53040,
-          vat: service.vatAmount || 291834
+        breakdown: isDedicatedVps ? {
+          base: service.basePrice || 0,
+          automation: service.automationFee || 0,
+          vat: service.vatAmount || 0
         } : null
       });
     };
@@ -319,32 +321,26 @@ function showInvoiceStep(order) {
         Silakan lakukan pelunasan sesuai jumlah nominal di atas.
       </p>
       <div style="font-size: 0.8125rem; color: var(--text-muted);">
-        Faktur pesanan Anda berstatus <strong>Menunggu Pembayaran</strong> dan akan segera diproses oleh Administrator MultiCloud. Anda juga dapat menggunakan simulasi instan di bawah ini.
+        Pesanan Anda telah diteruskan ke Administrator MultiCloud dengan status <strong>Menunggu Pembayaran</strong>. Pembayaran hanya dapat diverifikasi dan disetujui oleh Administrator. Pantau status aktivasi layanan Anda di menu <strong>Pesanan Saya</strong>.
       </div>
     </div>
 
     <div class="modal-footer" style="margin-left: -1.5rem; margin-right: -1.5rem; margin-bottom: -1.5rem;">
-      <button class="btn btn-secondary btn-sm" id="go-to-dash-btn">Buka Dasbor Pesanan</button>
-      <button class="btn btn-primary btn-sm" id="confirm-payment-now-btn">
-        ${icons.checkCircle('icon', 16, 2)}
-        <span>Simulasikan Pembayaran Selesai</span>
+      <button type="button" class="btn btn-secondary btn-sm modal-close-trigger">Tutup</button>
+      <button type="button" class="btn btn-primary btn-sm" id="go-to-dash-btn">
+        ${icons.layoutDashboard('icon', 16, 2)}
+        <span>Buka Dasbor Pesanan</span>
       </button>
     </div>
   `;
 
+  modalBody.querySelectorAll('.modal-close-trigger').forEach(btn => {
+    btn.addEventListener('click', closeModal);
+  });
+
   document.getElementById('go-to-dash-btn').onclick = () => {
     closeModal();
-    window.location.hash = '#/dashboard';
-  };
-
-  document.getElementById('confirm-payment-now-btn').onclick = async () => {
-    const btn = document.getElementById('confirm-payment-now-btn');
-    if (btn) {
-      btn.disabled = true;
-      btn.innerHTML = '<span>Memverifikasi Pembayaran...</span>';
-    }
-    await store.confirmOrderPayment(order.id);
-    showSuccessStep(order);
+    window.location.hash = '#/dashboard/orders';
   };
 }
 

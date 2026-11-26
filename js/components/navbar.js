@@ -10,6 +10,8 @@ import { toggleTheme } from '../theme.js';
 export function renderNavbar(activeRoute = '/') {
   const state = store.getState();
   const user = state.currentUser;
+  const isSolusiActive = activeRoute === '/services' || activeRoute.startsWith('/products') || activeRoute === '/pricing';
+  const isPerusahaanActive = activeRoute === '/about' || activeRoute === '/contact';
 
   return `
     <header class="navbar" id="site-navbar">
@@ -25,15 +27,49 @@ export function renderNavbar(activeRoute = '/') {
           </div>
         </a>
 
-        <!-- Menu Navigasi Desktop -->
+        <!-- Menu Navigasi Desktop (Hemat Ruang dengan Submenu) -->
         <nav class="nav-menu" aria-label="Navigasi Utama">
           <a href="#/" class="nav-link ${activeRoute === '/' ? 'active' : ''}">Beranda</a>
-          <a href="#/services" class="nav-link ${activeRoute === '/services' ? 'active' : ''}">Layanan</a>
-          <a href="#/products" class="nav-link ${activeRoute.startsWith('/products') ? 'active' : ''}">Produk</a>
-          <a href="#/pricing" class="nav-link ${activeRoute === '/pricing' ? 'active' : ''}">Tarif</a>
+
+          <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown-trigger ${isSolusiActive ? 'active' : ''}" aria-expanded="false">
+              <span>Solusi</span>
+              ${icons.chevronDown('nav-chevron', 14, 2)}
+            </button>
+            <div class="nav-dropdown-menu" role="menu">
+              <a href="#/services" class="nav-dropdown-item ${activeRoute === '/services' ? 'active' : ''}" role="menuitem">
+                <span class="nav-dd-title">Layanan</span>
+                <span class="nav-dd-desc">Cloud &amp; infrastruktur terkelola</span>
+              </a>
+              <a href="#/products" class="nav-dropdown-item ${activeRoute.startsWith('/products') ? 'active' : ''}" role="menuitem">
+                <span class="nav-dd-title">Produk</span>
+                <span class="nav-dd-desc">Katalog perangkat lunak &amp; lisensi</span>
+              </a>
+              <a href="#/pricing" class="nav-dropdown-item ${activeRoute === '/pricing' ? 'active' : ''}" role="menuitem">
+                <span class="nav-dd-title">Tarif</span>
+                <span class="nav-dd-desc">Paket langganan &amp; estimasi biaya</span>
+              </a>
+            </div>
+          </div>
+
           <a href="#/docs" class="nav-link ${activeRoute === '/docs' ? 'active' : ''}">Dokumentasi</a>
-          <a href="#/about" class="nav-link ${activeRoute === '/about' ? 'active' : ''}">Tentang Kami</a>
-          <a href="#/contact" class="nav-link ${activeRoute === '/contact' ? 'active' : ''}">Kontak</a>
+
+          <div class="nav-dropdown">
+            <button type="button" class="nav-link nav-dropdown-trigger ${isPerusahaanActive ? 'active' : ''}" aria-expanded="false">
+              <span>Perusahaan</span>
+              ${icons.chevronDown('nav-chevron', 14, 2)}
+            </button>
+            <div class="nav-dropdown-menu" role="menu">
+              <a href="#/about" class="nav-dropdown-item ${activeRoute === '/about' ? 'active' : ''}" role="menuitem">
+                <span class="nav-dd-title">Tentang Kami</span>
+                <span class="nav-dd-desc">Profil, visi, dan tim MultiCloud</span>
+              </a>
+              <a href="#/contact" class="nav-dropdown-item ${activeRoute === '/contact' ? 'active' : ''}" role="menuitem">
+                <span class="nav-dd-title">Kontak</span>
+                <span class="nav-dd-desc">Hubungi dukungan &amp; konsultasi</span>
+              </a>
+            </div>
+          </div>
         </nav>
 
         <!-- Aksi Navbar & Penggantian Tema -->
@@ -137,9 +173,6 @@ export function renderNavbar(activeRoute = '/') {
         ` : `
           <a href="#/login" class="btn btn-outline btn-block">Masuk ke Akun</a>
           <a href="#/register" class="btn btn-primary btn-block">Daftar Akun Baru</a>
-          <a href="#/admin-login" class="btn btn-ghost btn-block" style="font-size: 0.8125rem; color: var(--text-muted);">
-            ${icons.lock('icon', 14, 2)} Masuk Khusus Administrator
-          </a>
         `}
       </div>
     </aside>
@@ -178,6 +211,67 @@ export function setupNavbarEvents() {
   const links = drawer?.querySelectorAll('a');
   links?.forEach(link => {
     link.addEventListener('click', closeDrawer);
+  });
+
+  // Dropdown Submenu Desktop (hover-intent dengan grace delay + klik)
+  const dropdowns = Array.from(document.querySelectorAll('.nav-dropdown'));
+  const closeTimers = new WeakMap();
+
+  const clearCloseTimer = (dd) => {
+    const t = closeTimers.get(dd);
+    if (t) {
+      clearTimeout(t);
+      closeTimers.delete(dd);
+    }
+  };
+
+  const setDropdownOpen = (dd, open) => {
+    clearCloseTimer(dd);
+    dd.classList.toggle('is-open', open);
+    const trig = dd.querySelector('.nav-dropdown-trigger');
+    if (trig) trig.setAttribute('aria-expanded', open ? 'true' : 'false');
+  };
+
+  const closeAllDropdowns = (except = null) => {
+    dropdowns.forEach(dd => {
+      if (dd !== except) setDropdownOpen(dd, false);
+    });
+  };
+
+  dropdowns.forEach(dd => {
+    const trig = dd.querySelector('.nav-dropdown-trigger');
+
+    dd.addEventListener('mouseenter', () => {
+      clearCloseTimer(dd);
+      closeAllDropdowns(dd);
+      setDropdownOpen(dd, true);
+    });
+
+    dd.addEventListener('mouseleave', () => {
+      clearCloseTimer(dd);
+      const timer = setTimeout(() => {
+        setDropdownOpen(dd, false);
+      }, 240);
+      closeTimers.set(dd, timer);
+    });
+
+    if (trig) {
+      trig.onclick = (e) => {
+        e.stopPropagation();
+        const willOpen = !dd.classList.contains('is-open');
+        closeAllDropdowns(dd);
+        setDropdownOpen(dd, willOpen);
+      };
+    }
+
+    dd.querySelectorAll('.nav-dropdown-item').forEach(item => {
+      item.addEventListener('click', () => closeAllDropdowns());
+    });
+  });
+
+  document.addEventListener('click', () => closeAllDropdowns());
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeAllDropdowns();
   });
 
   const desktopLogoutBtn = document.getElementById('desktop-logout-btn');

@@ -71,7 +71,7 @@ export function renderAdminDashboard(tab = 'overview') {
             <button class="sidebar-nav-item ${activeAdminTab === 'supabase' ? 'active' : ''}" data-admin-tab="supabase">
               ${icons.database('icon', 18, 2)}
               <span>Basis Data Supabase</span>
-              <span class="status-pill ${isSupabaseLive ? 'success' : 'warning'}" style="font-size: 0.625rem; padding: 0.1rem 0.4rem; margin-left: auto;">
+              <span class="status-pill ${isSupabaseLive ? 'success' : 'warning'}" style="font-size: 0.625rem; padding: 0.1rem 0.45rem; margin-left: auto; flex-shrink: 0; white-space: nowrap;">
                 ${isSupabaseLive ? 'Aktif' : 'Lokal'}
               </span>
             </button>
@@ -107,13 +107,25 @@ function renderAdminTabContent(tab, state) {
 
   switch (tab) {
     case 'orders':
+      const sortedOrders = [...state.orders].sort((a, b) => {
+        const aPending = a.status !== 'Selesai' ? 0 : 1;
+        const bPending = b.status !== 'Selesai' ? 0 : 1;
+        if (aPending !== bPending) return aPending - bPending;
+        return new Date(b.date || 0) - new Date(a.date || 0);
+      });
+
       return `
         <div class="dash-header">
           <div>
             <h1 class="dash-title">Kelola Pesanan Masuk</h1>
             <p class="dash-subtitle">Pantau seluruh pesanan pelanggan, verifikasi status pembayaran, dan terbitkan kunci lisensi resmi.</p>
           </div>
+          <button type="button" class="btn btn-outline btn-sm" id="admin-refresh-orders-btn">
+            ${icons.refresh('icon', 15, 2)} Segarkan Pesanan
+          </button>
         </div>
+
+        <div id="admin-order-feedback" class="auth-alert auth-alert-success" role="status" style="display: none;"></div>
 
         <div class="dash-card">
           <div class="dash-table-wrap">
@@ -131,7 +143,13 @@ function renderAdminTabContent(tab, state) {
                 </tr>
               </thead>
               <tbody>
-                ${state.orders.map(o => `
+                ${sortedOrders.length === 0 ? `
+                  <tr>
+                    <td colspan="8" style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+                      Belum ada pesanan masuk dari pelanggan.
+                    </td>
+                  </tr>
+                ` : sortedOrders.map(o => `
                   <tr>
                     <td><strong style="color: var(--text-primary); font-family: var(--font-mono);">${o.invoiceNumber || o.id}</strong></td>
                     <td>${o.userName || 'Pelanggan'}</td>
@@ -146,7 +164,7 @@ function renderAdminTabContent(tab, state) {
                     </td>
                     <td>
                       ${o.status !== 'Selesai' ? `
-                        <button class="btn btn-primary btn-sm admin-approve-order-btn" data-order-id="${o.id}">
+                        <button type="button" class="btn btn-primary btn-sm admin-approve-order-btn" data-order-id="${o.id}">
                           ${icons.check('icon', 14, 2)} Terima & Setujui Pesanan
                         </button>
                       ` : `
@@ -313,12 +331,7 @@ function renderAdminTabContent(tab, state) {
       `;
 
     case 'customers':
-      const customersListToRender = (liveCustomers && liveCustomers.length > 0) 
-        ? liveCustomers 
-        : [
-            { full_name: 'Ahmad Fauzan', email: 'ahmad.fauzan@devstudio.id', company: 'DevStudio Indonesia', role: 'user', created_at: '2025-08-14' },
-            { full_name: 'Bambang Wicaksono', email: 'bambang@fintechscale.co.id', company: 'Fintech Scale Labs', role: 'user', created_at: '2025-09-02' }
-          ];
+      const customersListToRender = Array.isArray(liveCustomers) ? liveCustomers : [];
 
       return `
         <div class="dash-header">
@@ -345,7 +358,13 @@ function renderAdminTabContent(tab, state) {
                 </tr>
               </thead>
               <tbody id="customers-table-body">
-                ${customersListToRender.map(c => `
+                ${customersListToRender.length === 0 ? `
+                  <tr>
+                    <td colspan="6" style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+                      Belum ada pelanggan terdaftar.
+                    </td>
+                  </tr>
+                ` : customersListToRender.map(c => `
                   <tr>
                     <td><strong>${c.full_name || 'Pengguna'}</strong></td>
                     <td>${c.email}</td>
@@ -384,7 +403,13 @@ function renderAdminTabContent(tab, state) {
                 </tr>
               </thead>
               <tbody>
-                ${state.transactions.map(t => `
+                ${state.transactions.length === 0 ? `
+                  <tr>
+                    <td colspan="6" style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted);">
+                      Belum ada mutasi transaksi masuk.
+                    </td>
+                  </tr>
+                ` : state.transactions.map(t => `
                   <tr>
                     <td><strong style="color: var(--text-primary); font-family: var(--font-mono);">${t.id}</strong></td>
                     <td>${t.description}</td>
@@ -437,6 +462,12 @@ function renderAdminTabContent(tab, state) {
       `;
 
     default: // overview
+      const completedRevenue = state.orders
+        .filter(o => o.status === 'Selesai')
+        .reduce((sum, o) => sum + Number(o.amount || 0), 0);
+      const pendingOrdersTotal = state.orders.filter(o => o.status !== 'Selesai').length;
+      const activeServicesTotal = state.services.length + state.digitalProducts.length;
+
       return `
         <div class="dash-header">
           <div>
@@ -451,34 +482,34 @@ function renderAdminTabContent(tab, state) {
         <div class="metrics-row">
           <div class="metric-card">
             <div class="metric-header">
-              <span class="metric-title">Estimasi Omzet</span>
+              <span class="metric-title">Total Pendapatan Lunas</span>
               ${icons.receipt('icon', 18, 2)}
             </div>
-            <div class="metric-val">${state.adminStats.totalRevenue}</div>
-            <div class="metric-trend">+14% dibanding bulan lalu</div>
+            <div class="metric-val">${formatRp(completedRevenue)}</div>
+            <div class="metric-trend">${state.orders.filter(o => o.status === 'Selesai').length} pesanan terverifikasi</div>
           </div>
 
           <div class="metric-card">
             <div class="metric-header">
-              <span class="metric-title">Total Pengguna</span>
-              ${icons.users('icon', 18, 2)}
+              <span class="metric-title">Menunggu Verifikasi</span>
+              ${icons.clock('icon', 18, 2)}
             </div>
-            <div class="metric-val">${state.adminStats.activeUsers}</div>
-            <div class="metric-trend">Pelanggan aktif bulan ini</div>
+            <div class="metric-val">${pendingOrdersTotal} Pesanan</div>
+            <div class="metric-trend">Perlu persetujuan admin</div>
           </div>
 
           <div class="metric-card">
             <div class="metric-header">
-              <span class="metric-title">Layanan Awan Terpasang</span>
+              <span class="metric-title">Layanan & Lisensi Aktif</span>
               ${icons.server('icon', 18, 2)}
             </div>
-            <div class="metric-val">${state.adminStats.activeServicesCount}</div>
-            <div class="metric-trend">Kesehatan Node 99,99%</div>
+            <div class="metric-val">${activeServicesTotal} Aktif</div>
+            <div class="metric-trend">Terbit dari pesanan selesai</div>
           </div>
 
           <div class="metric-card">
             <div class="metric-header">
-              <span class="metric-title">Pesanan Masuk</span>
+              <span class="metric-title">Total Pesanan Masuk</span>
               ${icons.shoppingCart('icon', 18, 2)}
             </div>
             <div class="metric-val">${state.orders.length} Pesanan</div>
@@ -504,7 +535,13 @@ function renderAdminTabContent(tab, state) {
                 </tr>
               </thead>
               <tbody>
-                ${state.orders.slice(0, 3).map(o => `
+                ${state.orders.length === 0 ? `
+                  <tr>
+                    <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                      Belum ada pesanan masuk.
+                    </td>
+                  </tr>
+                ` : state.orders.slice(0, 3).map(o => `
                   <tr>
                     <td><strong>${o.invoiceNumber || o.id}</strong></td>
                     <td>${o.userName || 'Pelanggan'}</td>
@@ -591,6 +628,18 @@ function setupAdminSubEvents(tab) {
   }
 
   if (tab === 'orders') {
+    const refreshOrdersBtn = document.getElementById('admin-refresh-orders-btn');
+    if (refreshOrdersBtn) {
+      refreshOrdersBtn.onclick = async () => {
+        refreshOrdersBtn.disabled = true;
+        refreshOrdersBtn.textContent = 'Menyegarkan...';
+        await store.syncWithSupabase();
+        const content = document.getElementById('admin-content-area');
+        if (content) content.innerHTML = renderAdminTabContent('orders', store.getState());
+        setupAdminSubEvents('orders');
+      };
+    }
+
     const approveBtns = document.querySelectorAll('.admin-approve-order-btn');
     approveBtns.forEach(btn => {
       btn.onclick = async () => {
@@ -598,10 +647,14 @@ function setupAdminSubEvents(tab) {
         btn.disabled = true;
         btn.innerHTML = '<span>Menyetujui...</span>';
         await store.confirmOrderPayment(orderId);
-        alert(`Pesanan ${orderId} telah berhasil disetujui (diterima) oleh Administrator. Layanan/lisensi resmi pelanggan kini telah aktif!`);
         const content = document.getElementById('admin-content-area');
         if (content) content.innerHTML = renderAdminTabContent('orders', store.getState());
         setupAdminSubEvents('orders');
+        const feedbackEl = document.getElementById('admin-order-feedback');
+        if (feedbackEl) {
+          feedbackEl.innerHTML = `${icons.checkCircle('icon', 17, 2)} <span>Pesanan <strong>${orderId}</strong> berhasil disetujui. Layanan dan lisensi resmi pelanggan kini berstatus Selesai &amp; Aktif.</span>`;
+          feedbackEl.style.display = 'flex';
+        }
       };
     });
   }

@@ -103,8 +103,14 @@ ON CONFLICT (id) DO NOTHING;
 -- 8. Data Administrator Bawaan
 INSERT INTO public.profiles (email, full_name, role, phone, company)
 VALUES 
-    ('admin@multicloud.id', 'Administrator MultiCloud', 'admin', '+62 812-9876-5432', 'Kantor Pusat MultiCloud')
+    ('admin@multicloud.id', 'Administrator MultiCloud', 'admin', '+62 812-9876-5432', 'Kantor Pusat MultiCloud'),
+    ('opskpnojabar@gmail.com', 'Administrator KPNO Jabar', 'admin', '+62 812-9876-5432', 'KPNO Jawa Barat'),
+    ('nexora.suport.id@gmail.com', 'Administrator Nexora Support', 'admin', '+62 812-9876-5432', 'Nexora Support Indonesia')
 ON CONFLICT (email) DO NOTHING;
+
+-- Bersihkan data contoh lama apabila pernah tersimpan
+DELETE FROM public.transactions WHERE id IN ('TRX-9921', 'TRX-9844', 'TRX-9701');
+DELETE FROM public.orders WHERE id IN ('ORD-2026-0891', 'ORD-2026-0840', 'ORD-2026-0792');
 
 -- Kebijakan Keamanan Tingkat Baris (Row Level Security - RLS)
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;

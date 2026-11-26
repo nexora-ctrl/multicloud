@@ -10,11 +10,10 @@ import { supabaseService } from '../supabase.js';
 
 let currentCategory = 'all';
 let currentSearch = '';
-let currentSort = 'popular';
+let currentSort = 'price-asc';
 let catalogState = 'ready'; // 'loading' | 'ready' | 'error'
 let catalogErrorMessage = '';
 let catalogProducts = [...productsList];
-let spotlightPkgIndex = 0;
 
 function formatRp(num) {
   return new Intl.NumberFormat('id-ID', {
@@ -34,14 +33,13 @@ export function renderProductsPage(initialCategory = 'all') {
   const validCat = productCategories.some(c => c.id === initialCategory) ? initialCategory : 'all';
   currentCategory = validCat;
   currentSearch = '';
-  currentSort = 'popular';
-  spotlightPkgIndex = 0;
+  currentSort = 'price-asc';
   catalogProducts = [...productsList];
   catalogState = 'ready';
   catalogErrorMessage = '';
 
   return `
-    <div class="page-header">
+    <div class="page-header page-header-compact">
       <div class="container">
         <nav class="breadcrumbs" aria-label="Jejak Navigasi">
           <a href="#/">Beranda</a>
@@ -49,21 +47,18 @@ export function renderProductsPage(initialCategory = 'all') {
           <span class="current" aria-current="page">Produk</span>
         </nav>
         <div class="page-header-content">
-          <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.75rem;">Katalog Produk Digital</h1>
-          <p style="font-size: 1.125rem; color: var(--text-secondary); line-height: 1.6;">
-            Jelajahi piranti desain kreatif seperti Canva Premium, langganan kecerdasan buatan berlisensi resmi, perkakas pengembang, dan lisensi piranti lunak bergaransi penuh.
+          <h1 style="font-size: 2.25rem; font-weight: 800; margin-bottom: 0.5rem;">Katalog Produk Digital</h1>
+          <p style="font-size: 1.0625rem; color: var(--text-secondary); line-height: 1.55;">
+            Pilih layanan dan lisensi resmi yang Anda butuhkan, lalu klik <strong>Pesan</strong> atau <strong>Rincian</strong> untuk melihat pilihan paket.
           </p>
         </div>
       </div>
     </div>
 
     <div class="container" style="padding-bottom: 5rem;">
-      <!-- Sorotan Layanan Baru: Canva Premium -->
-      <section id="canva-spotlight-section" aria-label="Sorotan Layanan Canva Premium"></section>
-
       <!-- Bilah Alat Penyaring & Pencarian -->
       <div class="catalog-toolbar">
-        <div class="filter-pills" id="product-category-pills" role="group" aria-label="Saring berdasarkan kategori produk">
+        <div class="filter-pills" id="product-category-pills" role="group" aria-label="Saring kategori produk">
           ${productCategories.map(cat => `
             <button
               type="button"
@@ -85,158 +80,34 @@ export function renderProductsPage(initialCategory = 'all') {
                 type="search"
                 class="form-input search-input"
                 id="products-search-input"
-                placeholder="Contoh: Canva Premium, Cursor, VPS..."
+                placeholder="Cari nama produk..."
               />
             </div>
           </div>
 
           <div class="toolbar-field toolbar-field-sort">
-            <label class="toolbar-label" for="products-sort-select">Urutkan Katalog</label>
+            <label class="toolbar-label" for="products-sort-select">Urutkan</label>
             <select class="form-select" id="products-sort-select">
-              <option value="popular">Unggulan & Terbaru</option>
-              <option value="price-asc">Harga: Terendah</option>
+              <option value="price-asc" selected>Harga: Terendah</option>
               <option value="price-desc">Harga: Tertinggi</option>
-              <option value="rating">Nilai Ulasan Tertinggi</option>
+              <option value="popular">Paling Populer</option>
+              <option value="rating">Ulasan Tertinggi</option>
             </select>
           </div>
         </div>
       </div>
 
-      <!-- Kepala Daftar Katalog -->
+      <!-- Ringkasan Jumlah Produk -->
       <div class="catalog-section-bar">
-        <h2 class="catalog-section-heading" id="catalog-results-heading">Daftar Katalog Produk</h2>
         <span class="catalog-count-pill" id="catalog-results-count" aria-live="polite"></span>
       </div>
 
       <!-- Kisi Produk -->
-      <div class="grid-3" id="products-grid-container">
+      <div class="grid-2" id="products-grid-container">
         <!-- Dirender oleh updateProductsGrid -->
       </div>
     </div>
   `;
-}
-
-function renderCanvaSpotlight() {
-  const spotlightEl = document.getElementById('canva-spotlight-section');
-  if (!spotlightEl) return;
-
-  const canvaProduct = catalogProducts.find(p => p.id === 'prod-canva-premium');
-  const shouldShow =
-    canvaProduct &&
-    catalogState === 'ready' &&
-    currentSearch === '' &&
-    (currentCategory === 'all' || currentCategory === 'design-creative');
-
-  if (!shouldShow) {
-    spotlightEl.innerHTML = '';
-    spotlightEl.style.display = 'none';
-    return;
-  }
-
-  spotlightEl.style.display = 'block';
-  const selectedPkg = canvaProduct.packages[spotlightPkgIndex] || canvaProduct.packages[0];
-
-  spotlightEl.innerHTML = `
-    <div class="product-spotlight">
-      <div class="product-spotlight-info">
-        <div class="product-spotlight-badges">
-          <span class="badge badge-new">Layanan Baru: Desain & Kreatif</span>
-          <span class="badge badge-success">
-            ${icons.shieldCheck('icon', 13, 2)}
-            <span>Undangan Resmi ke Surel Pribadi</span>
-          </span>
-        </div>
-
-        <div class="product-spotlight-title-row">
-          <div class="card-icon-box" style="width: 52px; height: 52px;">
-            ${icons.palette('icon', 26, 2)}
-          </div>
-          <div>
-            <h2 class="product-spotlight-title">
-              <a href="#/products/${canvaProduct.id}">${canvaProduct.name}</a>
-            </h2>
-            <p class="product-spotlight-tagline">${canvaProduct.tagline}</p>
-          </div>
-        </div>
-
-        <p class="product-spotlight-desc">${canvaProduct.shortDescription}</p>
-
-        <ul class="product-spotlight-features">
-          ${canvaProduct.features.slice(0, 4).map(feat => `
-            <li>
-              <span class="feature-check-icon">${icons.checkCircle('icon', 17, 2)}</span>
-              <span>${feat}</span>
-            </li>
-          `).join('')}
-        </ul>
-      </div>
-
-      <div class="product-spotlight-OrderBox">
-        <div class="spotlight-box-header">
-          <span class="spotlight-box-label">Pilih Durasi Langganan Canva Premium</span>
-          <span class="spotlight-box-sub">Tanpa kata sandi akun, ruang desain pribadi tetap terpisah</span>
-        </div>
-
-        <div class="spotlight-pkg-list" role="radiogroup" aria-label="Pilihan paket Canva Premium">
-          ${canvaProduct.packages.map((pkg, idx) => `
-            <label class="spotlight-pkg-option ${idx === spotlightPkgIndex ? 'selected' : ''}" data-pkg-idx="${idx}">
-              <input
-                type="radio"
-                name="spotlight-canva-package"
-                value="${idx}"
-                ${idx === spotlightPkgIndex ? 'checked' : ''}
-              />
-              <div class="spotlight-pkg-meta">
-                <div class="spotlight-pkg-top">
-                  <span class="spotlight-pkg-name">${pkg.name}</span>
-                  <strong class="spotlight-pkg-price">${formatRp(pkg.price)}</strong>
-                </div>
-                <span class="spotlight-pkg-note">${pkg.note}</span>
-              </div>
-            </label>
-          `).join('')}
-        </div>
-
-        <div class="spotlight-total-bar">
-          <span>Tagihan Paket Terpilih</span>
-          <strong id="spotlight-selected-price">${formatRp(selectedPkg.price)}</strong>
-        </div>
-
-        <div class="spotlight-actions">
-          <button type="button" class="btn btn-primary btn-md" id="spotlight-buy-canva-btn">
-            ${icons.shoppingCart('icon', 17, 2)}
-            <span>Beli Canva Premium</span>
-          </button>
-          <a href="#/products/${canvaProduct.id}" class="btn btn-outline btn-md">
-            <span>Lihat Rincian & FAQ</span>
-          </a>
-        </div>
-      </div>
-    </div>
-  `;
-
-  const pkgInputs = spotlightEl.querySelectorAll('input[name="spotlight-canva-package"]');
-  pkgInputs.forEach(input => {
-    input.addEventListener('change', (e) => {
-      spotlightPkgIndex = parseInt(e.target.value, 10) || 0;
-      renderCanvaSpotlight();
-      const restored = document.querySelector(`input[name="spotlight-canva-package"][value="${spotlightPkgIndex}"]`);
-      if (restored) restored.focus();
-    });
-  });
-
-  const buyBtn = document.getElementById('spotlight-buy-canva-btn');
-  if (buyBtn) {
-    buyBtn.onclick = () => {
-      const chosen = canvaProduct.packages[spotlightPkgIndex] || canvaProduct.packages[0];
-      openOrderModal({
-        itemTitle: canvaProduct.name,
-        category: canvaProduct.category,
-        packageName: chosen.name,
-        amount: chosen.price
-      });
-    };
-  }
 }
 
 function updateProductsGrid() {
@@ -244,34 +115,32 @@ function updateProductsGrid() {
   const countEl = document.getElementById('catalog-results-count');
   if (!container) return;
 
-  renderCanvaSpotlight();
-
   if (catalogState === 'loading') {
-    if (countEl) countEl.textContent = 'Memuat data...';
+    if (countEl) countEl.textContent = 'Memuat produk...';
     container.innerHTML = `
       <div class="catalog-state-box" role="status" aria-live="polite">
         <div class="catalog-state-icon">
           ${icons.refresh('icon', 26, 2)}
         </div>
-        <h3 class="catalog-state-title">Memuat Katalog Produk</h3>
-        <p class="catalog-state-desc">Menyiapkan daftar lisensi resmi dan paket layanan terbaru untuk Anda.</p>
+        <h2 class="catalog-state-title">Memuat Katalog Produk</h2>
+        <p class="catalog-state-desc">Menyiapkan daftar layanan dan lisensi resmi untuk Anda.</p>
       </div>
     `;
     return;
   }
 
   if (catalogState === 'error') {
-    if (countEl) countEl.textContent = 'Kendala pemuatan';
+    if (countEl) countEl.textContent = 'Gagal memuat';
     container.innerHTML = `
       <div class="catalog-state-box catalog-state-error" role="alert">
         <div class="catalog-state-icon error">
           ${icons.alertCircle('icon', 26, 2)}
         </div>
-        <h3 class="catalog-state-title">Gagal Memuat Katalog Produk</h3>
-        <p class="catalog-state-desc">${catalogErrorMessage || 'Terjadi gangguan saat menyinkronkan katalog. Silakan muat ulang daftar produk.'}</p>
+        <h2 class="catalog-state-title">Gagal Memuat Katalog Produk</h2>
+        <p class="catalog-state-desc">${catalogErrorMessage || 'Terjadi gangguan saat memuat daftar produk. Silakan coba lagi.'}</p>
         <button type="button" class="btn btn-primary btn-sm" id="retry-catalog-load-btn">
           ${icons.refresh('icon', 16, 2)}
-          <span>Muat Ulang Katalog</span>
+          <span>Muat Ulang</span>
         </button>
       </div>
     `;
@@ -304,12 +173,12 @@ function updateProductsGrid() {
   } else if (currentSort === 'rating') {
     filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
   } else {
-    const order = { 'Baru': 1, 'Terlaris': 2, 'Populer': 3 };
+    const order = { 'Terlaris': 1, 'Populer': 2, 'Baru': 3 };
     filtered.sort((a, b) => (order[a.badge] || 99) - (order[b.badge] || 99));
   }
 
   if (countEl) {
-    countEl.textContent = `${filtered.length} produk tersedia`;
+    countEl.textContent = `Menampilkan ${filtered.length} produk`;
   }
 
   if (filtered.length === 0) {
@@ -318,8 +187,8 @@ function updateProductsGrid() {
         <div class="catalog-state-icon">
           ${icons.search('icon', 26, 2)}
         </div>
-        <h3 class="catalog-state-title">Tidak Menemukan Produk</h3>
-        <p class="catalog-state-desc">Tidak ada produk yang cocok dengan kata kunci atau kategori yang dipilih.</p>
+        <h2 class="catalog-state-title">Produk Tidak Ditemukan</h2>
+        <p class="catalog-state-desc">Tidak ada produk yang cocok dengan pencarian atau kategori yang dipilih.</p>
         <button type="button" class="btn btn-outline btn-sm" id="reset-catalog-filter-btn">
           <span>Tampilkan Semua Produk</span>
         </button>
@@ -347,9 +216,7 @@ function updateProductsGrid() {
     <article class="product-card">
       <div class="product-badges-row">
         <div class="product-badge-group">
-          <span class="badge ${getBadgeClass(prod.badge)}">
-            ${prod.badge}
-          </span>
+          <span class="badge ${getBadgeClass(prod.badge)}">${prod.badge}</span>
           ${prod.isOfficialLicense ? `
             <span class="badge badge-success">
               ${icons.shieldCheck('icon', 12, 2)} Resmi
@@ -362,9 +229,7 @@ function updateProductsGrid() {
             <span>${prod.rating}</span>
             <span class="product-rating-count">(${prod.reviewsCount})</span>
           </div>
-        ` : `
-          <span class="product-rating-empty">Belum ada ulasan</span>
-        `}
+        ` : ''}
       </div>
 
       <div class="product-card-head">
@@ -372,9 +237,9 @@ function updateProductsGrid() {
           ${icons[prod.icon] ? icons[prod.icon]('icon', 22, 2) : icons.package('icon', 22, 2)}
         </div>
         <div>
-          <h3 class="product-title">
+          <h2 class="product-title">
             <a href="#/products/${prod.id}">${prod.name}</a>
-          </h3>
+          </h2>
           <div class="product-tagline">${prod.tagline}</div>
         </div>
       </div>
@@ -382,7 +247,7 @@ function updateProductsGrid() {
       <p class="product-desc">${prod.shortDescription}</p>
 
       <div class="product-features-mini">
-        ${(prod.features || []).slice(0, 3).map(feat => `
+        ${(prod.features || []).slice(0, 2).map(feat => `
           <div class="product-feature-pill">
             <span class="feature-check-icon">${icons.check('icon', 15, 2)}</span>
             <span>${feat}</span>
@@ -399,10 +264,10 @@ function updateProductsGrid() {
           </div>
         </div>
         <div class="product-card-actions">
-          <a href="#/products/${prod.id}" class="btn btn-outline btn-sm">Lihat Rincian</a>
+          <a href="#/products/${prod.id}" class="btn btn-outline btn-sm">Rincian</a>
           <button type="button" class="btn btn-primary btn-sm product-card-order-btn" data-id="${prod.id}">
             ${icons.shoppingCart('icon', 16, 2)}
-            <span>Pesan Paket</span>
+            <span>Pesan</span>
           </button>
         </div>
       </div>

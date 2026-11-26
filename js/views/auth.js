@@ -44,23 +44,6 @@ export function renderAuthPage(mode = 'login') {
         <div id="auth-forms-container">
           ${mode === 'register' ? renderRegisterForm() : mode === 'forgot' ? renderForgotForm() : renderLoginForm()}
         </div>
-
-        <!-- Tombol Akses Uji Coba Cepat -->
-        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); text-align: center;">
-          <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 700; display: block; margin-bottom: 0.75rem;">
-            Pintasan Masuk Pengujian (Demo)
-          </span>
-          <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
-            <button class="btn btn-secondary btn-sm" id="quick-login-user-btn" type="button">
-              ${icons.user('icon', 15, 2)}
-              <span>Masuk Akun Demo</span>
-            </button>
-            <a href="#/admin-login" class="btn btn-outline btn-sm" style="color: var(--color-accent); border-color: var(--color-accent);">
-              ${icons.lock('icon', 15, 2)}
-              <span>Masuk Administrator</span>
-            </a>
-          </div>
-        </div>
       </div>
     </div>
   `;
@@ -232,8 +215,13 @@ export function setupAuthPageEvents() {
       const result = await supabaseService.authenticateUser(email, password);
 
       if (result.success) {
-        window.location.hash = '#/dashboard';
-        store.login(result.user.email, result.user.role, result.user);
+        if (result.user.role === 'admin') {
+          window.location.hash = '#/admin';
+          store.setAdminUser(result.user);
+        } else {
+          window.location.hash = '#/dashboard';
+          store.login(result.user.email, result.user.role, result.user);
+        }
       } else {
         if (submitBtn) {
           submitBtn.disabled = false;
@@ -326,14 +314,6 @@ export function setupAuthPageEvents() {
       }
       showAuthFeedback('success', `Instruksi pemulihan kata sandi untuk ${email} telah dikirimkan.`);
       forgotForm.reset();
-    };
-  }
-
-  const demoUserBtn = document.getElementById('quick-login-user-btn');
-  if (demoUserBtn) {
-    demoUserBtn.onclick = () => {
-      window.location.hash = '#/dashboard';
-      store.login('ahmad.fauzan@devstudio.id', 'user');
     };
   }
 }

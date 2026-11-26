@@ -62,9 +62,6 @@ export function renderFooter() {
               <a href="#/docs" class="footer-link">Dokumentasi Teknis</a>
               <a href="#/about" class="footer-link">Tentang MultiCloud</a>
               <a href="#/contact" class="footer-link">Pusat Bantuan</a>
-              <a href="#/admin-login" class="footer-link" style="color: var(--color-accent); font-weight: 600;">
-                ${icons.lock('icon', 13, 2)} Masuk Administrator
-              </a>
             </div>
           </div>
 

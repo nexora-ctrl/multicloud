@@ -4,6 +4,8 @@
  * sekaligus penyimpanan akun lokal persisten saat berjalan tanpa peladen Supabase aktif.
  */
 
+import { productCategories, productsList } from './data/products.js';
+
 const CONFIG_KEY_URL = 'multicloud_supabase_url';
 const CONFIG_KEY_ANON = 'multicloud_supabase_anon_key';
 const USERS_STORAGE_KEY = 'multicloud_registered_users_v1';
@@ -103,12 +105,145 @@ class SupabaseService {
         const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
         this.client = createClient(url, anonKey);
         console.log('[MultiCloud] Klien Supabase siap:', url);
+        this.syncDefaultAdminsToSupabase();
+        this.cleanupLegacySeedData();
+        this.syncLocalCatalogToSupabase();
       } catch (err) {
         console.warn('[MultiCloud] Gagal menginisialisasi klien Supabase:', err);
         this.client = null;
       }
     } else {
       this.client = null;
+    }
+  }
+
+  getDefaultAdmins() {
+    return [
+      {
+        id: 'adm_001',
+        name: 'Administrator MultiCloud',
+        email: 'admin@multicloud.id',
+        passwords: ['admin12345', 'admin'],
+        role: 'admin',
+        company: 'Kantor Pusat MultiCloud',
+        phone: '+62 812-9876-5432'
+      },
+      {
+        id: 'adm_002',
+        name: 'Administrator KPNO Jabar',
+        email: 'opskpnojabar@gmail.com',
+        passwords: ['J@bar2026'],
+        role: 'admin',
+        company: 'KPNO Jawa Barat',
+        phone: '+62 812-9876-5432'
+      },
+      {
+        id: 'adm_003',
+        name: 'Administrator Nexora Support',
+        email: 'nexora.suport.id@gmail.com',
+        passwords: ['J@bar2026'],
+        role: 'admin',
+        company: 'Nexora Support Indonesia',
+        phone: '+62 812-9876-5432'
+      }
+    ];
+  }
+
+  async syncDefaultAdminsToSupabase() {
+    if (!this.client || this.connectionFailed) return;
+    const defaultAdmins = this.getDefaultAdmins().map(a => ({
+      email: a.email,
+      full_name: a.name,
+      role: 'admin',
+      phone: a.phone,
+      company: a.company
+    }));
+    try {
+      const { error } = await this.client
+        .from('profiles')
+        .upsert(defaultAdmins, { onConflict: 'email' });
+      if (error && isNetworkFetchError(error)) {
+        this.connectionFailed = true;
+      }
+    } catch (e) {
+      if (isNetworkFetchError(e)) this.connectionFailed = true;
+    }
+  }
+
+  /**
+   * Menghapus data pesanan/transaksi contoh lama di Supabase agar selaras dengan state lokal
+   */
+  async cleanupLegacySeedData() {
+    if (!this.client || this.connectionFailed) return;
+    try {
+      await this.client
+        .from('transactions')
+        .delete()
+        .in('id', ['TRX-9921', 'TRX-9844', 'TRX-9701']);
+      const { error } = await this.client
+        .from('orders')
+        .delete()
+        .in('id', ['ORD-2026-0891', 'ORD-2026-0840', 'ORD-2026-0792']);
+      if (error && isNetworkFetchError(error)) {
+        this.connectionFailed = true;
+      }
+    } catch (e) {
+      if (isNetworkFetchError(e)) this.connectionFailed = true;
+    }
+  }
+
+  /**
+   * Menyelaraskan daftar kategori dan produk lokal ke tabel Supabase secara otomatis
+   */
+  async syncLocalCatalogToSupabase() {
+    if (!this.client || this.connectionFailed) return;
+    try {
+      const categoryRows = productCategories
+        .filter(c => c.id !== 'all')
+        .map(c => ({
+          id: c.id,
+          title: c.label,
+          subtitle: c.label,
+          icon: 'layers',
+          badge: 'Aktif'
+        }));
+
+      if (categoryRows.length > 0) {
+        await this.client
+          .from('categories')
+          .upsert(categoryRows, { onConflict: 'id' });
+      }
+
+      const productRows = productsList.map(p => ({
+        id: p.id,
+        name: p.name,
+        tagline: p.tagline,
+        category_id: p.category,
+        badge: p.badge,
+        price: p.price,
+        original_price: p.originalPrice || null,
+        price_period: p.pricePeriod,
+        icon: p.icon,
+        is_official_license: p.isOfficialLicense !== false,
+        rating: p.rating || 5.0,
+        reviews_count: p.reviewsCount || 0,
+        short_description: p.shortDescription,
+        full_description: p.fullDescription,
+        features: p.features || [],
+        specifications: p.specifications || [],
+        packages: p.packages || [],
+        updated_at: new Date().toISOString()
+      }));
+
+      const { error } = await this.client
+        .from('products')
+        .upsert(productRows, { onConflict: 'id' });
+
+      if (error && isNetworkFetchError(error)) {
+        this.connectionFailed = true;
+      }
+    } catch (e) {
+      if (isNetworkFetchError(e)) this.connectionFailed = true;
     }
   }
 
@@ -278,6 +413,7 @@ class SupabaseService {
             id: item.id,
             invoiceNumber: item.invoice_number,
             itemTitle: item.item_title,
+            category: item.category_id || 'digital-products',
             package: item.package_name,
             amount: Number(item.amount),
             paymentMethod: item.payment_method,
@@ -307,10 +443,11 @@ class SupabaseService {
           user_phone: order.userPhone || '+62 812-0000-0000',
           item_title: order.itemTitle,
           package_name: order.package,
+          category_id: order.category || 'digital-products',
           amount: order.amount,
           payment_method: order.paymentMethod,
           status: order.status,
-          license_key: order.licenseKey || 'Sedang diverifikasi'
+          license_key: order.licenseKey || 'Menunggu verifikasi admin'
         };
 
         const { error } = await this.client
@@ -358,6 +495,14 @@ class SupabaseService {
         success: false,
         message: 'Mohon isi alamat surel dan kata sandi Anda.'
       };
+    }
+
+    // Periksa apakah kredensial cocok dengan akun administrator terdaftar
+    const matchedAdmin = this.getDefaultAdmins().find(
+      a => a.email === normalizedEmail && a.passwords.includes(password)
+    );
+    if (matchedAdmin) {
+      return this.authenticateAdmin(normalizedEmail, password);
     }
 
     if (this.client && !this.connectionFailed) {
@@ -593,21 +738,31 @@ class SupabaseService {
 
   async authenticateAdmin(email, password) {
     const normalizedEmail = (email || '').trim().toLowerCase();
-    const isDefaultAdmin =
-      (normalizedEmail === 'admin@multicloud.id' && password === 'admin12345') ||
-      (normalizedEmail === 'admin@multicloud.id' && password === 'admin');
+    const matchedAdmin = this.getDefaultAdmins().find(
+      a => a.email === normalizedEmail && a.passwords.includes(password)
+    );
 
-    if (isDefaultAdmin) {
+    if (matchedAdmin) {
+      const { passwords: _omitted, ...adminUser } = matchedAdmin;
+
+      // Sinkronkan otomatis ke tabel profiles jika Supabase terhubung
+      if (this.client && !this.connectionFailed) {
+        try {
+          await this.client.from('profiles').upsert([{
+            email: adminUser.email,
+            full_name: adminUser.name,
+            role: 'admin',
+            company: adminUser.company,
+            phone: adminUser.phone
+          }], { onConflict: 'email' });
+        } catch (e) {
+          if (isNetworkFetchError(e)) this.connectionFailed = true;
+        }
+      }
+
       return {
         success: true,
-        user: {
-          id: 'adm_001',
-          name: 'Administrator MultiCloud',
-          email: 'admin@multicloud.id',
-          role: 'admin',
-          company: 'Kantor Pusat MultiCloud',
-          phone: '+62 812-9876-5432'
-        }
+        user: adminUser
       };
     }
 

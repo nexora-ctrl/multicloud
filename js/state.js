@@ -6,152 +6,20 @@
 
 import { supabaseService } from './supabase.js';
 
-const STATE_KEY = 'multicloud_app_state_v2';
+const STATE_KEY = 'multicloud_app_state_v3';
 
 const defaultState = {
-  currentUser: {
-    id: 'usr_001',
-    name: 'Ahmad Fauzan',
-    email: 'ahmad.fauzan@devstudio.id',
-    role: 'user', // 'user' | 'admin'
-    company: 'DevStudio Indonesia',
-    phone: '+62 812-3456-7890',
-    joinedDate: '2025-08-14',
-    avatar: 'AF'
-  },
-  orders: [
-    {
-      id: 'ORD-2026-0891',
-      date: '2026-11-04T14:32:00',
-      itemTitle: 'Cursor AI Pro (Akses Resmi Berlisensi)',
-      category: 'ai-tools',
-      package: '1 Bulan Perorangan',
-      amount: 320000,
-      paymentMethod: 'QRIS Instan',
-      status: 'Selesai',
-      licenseKey: 'CRS-PRO-89F12-OFFICIAL',
-      invoiceNumber: 'INV/20261104/MC/891',
-      userName: 'Ahmad Fauzan',
-      userEmail: 'ahmad.fauzan@devstudio.id'
-    },
-    {
-      id: 'ORD-2026-0840',
-      date: '2026-10-22T09:15:00',
-      itemTitle: 'Peladen VPS Cloud NVMe Ultra (AMD EPYC)',
-      category: 'cloud-hosting',
-      package: 'Paket Pemula (2 vCPU / 4GB RAM)',
-      amount: 120000,
-      paymentMethod: 'BCA Virtual Account',
-      status: 'Selesai',
-      licenseKey: 'IP: 103.187.144.52 (Akses SSH Aktif)',
-      invoiceNumber: 'INV/20261022/MC/840',
-      userName: 'Ahmad Fauzan',
-      userEmail: 'ahmad.fauzan@devstudio.id'
-    },
-    {
-      id: 'ORD-2026-0792',
-      date: '2026-09-18T11:40:00',
-      itemTitle: 'Gerbang WhatsApp Business API Pro',
-      category: 'api-services',
-      package: 'Paket Pemula (5.000 Pesan)',
-      amount: 150000,
-      paymentMethod: 'Mandiri Virtual Account',
-      status: 'Selesai',
-      licenseKey: 'KUNCI-API: mc_live_wa_99182aa410',
-      invoiceNumber: 'INV/20260918/MC/792',
-      userName: 'Ahmad Fauzan',
-      userEmail: 'ahmad.fauzan@devstudio.id'
-    }
-  ],
-  services: [
-    {
-      id: 'srv_act_1',
-      name: 'Peladen VPS Cloud NVMe Ultra',
-      type: 'VPS Cloud',
-      ip: '103.187.144.52',
-      datacenter: 'Jakarta IDC 3D',
-      spec: '2 vCPU, 4GB RAM, 50GB NVMe',
-      status: 'Aktif',
-      expiresAt: '2026-12-22',
-      userEmail: 'ahmad.fauzan@devstudio.id',
-      autoRenew: true
-    },
-    {
-      id: 'srv_act_2',
-      name: 'Gerbang WhatsApp Business API',
-      type: 'Gerbang API',
-      quotaUsed: '2.140 / 5.000 Pesan Terkirim',
-      status: 'Aktif',
-      expiresAt: '2026-12-18',
-      userEmail: 'ahmad.fauzan@devstudio.id',
-      autoRenew: true
-    }
-  ],
-  digitalProducts: [
-    {
-      id: 'prod_act_1',
-      name: 'Cursor AI Pro Access',
-      accountEmail: 'ahmad.fauzan@devstudio.id',
-      licenseType: 'Lisensi Perorangan Resmi',
-      status: 'Aktif',
-      expiresAt: '2026-12-04'
-    }
-  ],
-  transactions: [
-    {
-      id: 'TRX-9921',
-      orderId: 'ORD-2026-0891',
-      userEmail: 'ahmad.fauzan@devstudio.id',
-      description: 'Pembayaran Cursor AI Pro 1 Bulan',
-      method: 'QRIS',
-      amount: 320000,
-      status: 'Berhasil',
-      date: '04 Nov 2026, 14:35 WIB'
-    },
-    {
-      id: 'TRX-9844',
-      orderId: 'ORD-2026-0840',
-      userEmail: 'ahmad.fauzan@devstudio.id',
-      description: 'Perpanjangan Peladen VPS Cloud Pemula',
-      method: 'BCA VA',
-      amount: 120000,
-      status: 'Berhasil',
-      date: '22 Okt 2026, 09:20 WIB'
-    },
-    {
-      id: 'TRX-9701',
-      orderId: 'ORD-2026-0792',
-      userEmail: 'ahmad.fauzan@devstudio.id',
-      description: 'Langganan Gerbang WhatsApp API',
-      method: 'Mandiri VA',
-      amount: 150000,
-      status: 'Berhasil',
-      date: '18 Sep 2026, 11:42 WIB'
-    }
-  ],
-  tickets: [
-    {
-      id: 'TCK-4012',
-      subject: 'Bantuan konfigurasi Reverse DNS (PTR) Peladen VPS',
-      department: 'Dukungan Teknis Komputasi Awan',
-      priority: 'Biasa',
-      status: 'Terjawab',
-      lastUpdate: '23 Okt 2026, 14:10 WIB'
-    },
-    {
-      id: 'TCK-3980',
-      subject: 'Penyesuaian alamat URL Webhook Gerbang WhatsApp API',
-      department: 'Dukungan API Pengembang',
-      priority: 'Rendah',
-      status: 'Selesai',
-      lastUpdate: '20 Sep 2026, 16:30 WIB'
-    }
-  ],
+  currentUser: null,
+  orders: [],
+  services: [],
+  digitalProducts: [],
+  transactions: [],
+  tickets: [],
   adminStats: {
-    totalRevenue: 'Rp 48.950.000',
-    activeUsers: '1.420 Pengguna',
-    activeServicesCount: '3.190 Layanan',
-    pendingOrdersCount: 2
+    totalRevenue: 'Rp 0',
+    activeUsers: '0 Pengguna',
+    activeServicesCount: '0 Layanan',
+    pendingOrdersCount: 0
   }
 };
 
@@ -160,6 +28,14 @@ class StateStore {
     this.state = this.loadState();
     this.listeners = [];
     this.syncWithSupabase();
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+      window.addEventListener('storage', (e) => {
+        if (e.key === STATE_KEY && e.newValue) {
+          this.state = this.loadState();
+          this.notify();
+        }
+      });
+    }
   }
 
   loadState() {
@@ -231,21 +107,25 @@ class StateStore {
 
   async syncWithSupabase() {
     if (supabaseService.isConfigured()) {
+      await supabaseService.cleanupLegacySeedData();
+      await supabaseService.syncLocalCatalogToSupabase();
       const dbOrders = await supabaseService.getOrders();
-      if (dbOrders && dbOrders.length > 0) {
-        // Gabungkan atau replace orders dari Supabase dengan data lokal
-        // Utamakan data dari Supabase
+      if (dbOrders) {
+        const legacyIds = new Set(['ORD-2026-0891', 'ORD-2026-0840', 'ORD-2026-0792']);
         const existingMap = new Map();
-        dbOrders.forEach(o => existingMap.set(o.id, o));
+        dbOrders.forEach(o => {
+          if (!legacyIds.has(o.id)) existingMap.set(o.id, o);
+        });
 
-        // Pertahankan order lokal jika belum ada di dbOrders
         this.state.orders.forEach(o => {
-          if (!existingMap.has(o.id)) {
+          if (!legacyIds.has(o.id) && !existingMap.has(o.id)) {
             existingMap.set(o.id, o);
           }
         });
 
-        this.state.orders = Array.from(existingMap.values());
+        this.state.orders = Array.from(existingMap.values()).sort(
+          (a, b) => new Date(b.date || 0) - new Date(a.date || 0)
+        );
         this.saveState();
       }
     }
