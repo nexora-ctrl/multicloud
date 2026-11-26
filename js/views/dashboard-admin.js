@@ -762,14 +762,31 @@ function setupAdminSubEvents(tab) {
 
     if (testBtn) {
       testBtn.onclick = async () => {
-        testBtn.textContent = 'Menguji...';
-        await supabaseService.initClient();
-        testBtn.textContent = 'Uji Koneksi';
+        const urlInput = document.getElementById('supabase-url')?.value.trim();
+        const keyInput = document.getElementById('supabase-anon-key')?.value.trim();
+        if (urlInput && keyInput) {
+          supabaseService.saveConfig(urlInput, keyInput);
+        }
 
-        if (supabaseService.isConfigured()) {
-          alert('Koneksi ke Supabase Berhasil! Endpoint aktif dan siap menerima data pesanan.');
-        } else {
-          alert('Kredensial belum lengkap. Silakan masukkan Project URL dan Anon Key Supabase yang valid.');
+        testBtn.disabled = true;
+        testBtn.textContent = 'Menguji...';
+        const ok = await supabaseService.retryConnection();
+        testBtn.disabled = false;
+        testBtn.innerHTML = `${icons.refresh('icon', 16, 2)} <span>Uji Koneksi</span>`;
+
+        if (feedback) {
+          feedback.style.display = 'block';
+          if (ok) {
+            feedback.style.backgroundColor = 'var(--color-success-subtle)';
+            feedback.style.color = 'var(--color-success)';
+            feedback.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+            feedback.innerHTML = '<strong>Koneksi ke Supabase Berhasil!</strong> Endpoint aktif dan siap menerima data pesanan.';
+          } else {
+            feedback.style.backgroundColor = 'var(--color-danger-subtle)';
+            feedback.style.color = '#b91c1c';
+            feedback.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+            feedback.innerHTML = `<strong>Gagal Terhubung ke Supabase.</strong> ${supabaseService.lastError || 'Pastikan proyek tidak sedang di-pause di supabase.com/dashboard dan URL serta Anon Key valid.'}`;
+          }
         }
       };
     }

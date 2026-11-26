@@ -9,10 +9,13 @@ import { productCategories, productsList } from './data/products.js';
 const CONFIG_KEY_URL = 'multicloud_supabase_url';
 const CONFIG_KEY_ANON = 'multicloud_supabase_anon_key';
 const USERS_STORAGE_KEY = 'multicloud_registered_users_v1';
-const LEGACY_DEAD_HOST = 'hzamkkknabduqmdivcqd.supabase.co';
 
-const DEFAULT_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) || '';
-const DEFAULT_ANON_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_ANON_KEY) || '';
+const DEFAULT_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) || 'https://hzamkkknabduqmdivcqd.supabase.co';
+const DEFAULT_ANON_KEY = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_ANON_KEY) || 'sb_publishable_4iMAn_pkRlm1m6uN7eAX5w_ab20R6w5';
+
+function normalizeSupabaseUrl(rawUrl) {
+  return (rawUrl || '').trim().replace(/\/rest\/v1\/?$/i, '').replace(/\/+$/, '');
+}
 
 function isNetworkFetchError(err) {
   if (!err) return false;
@@ -50,7 +53,6 @@ class SupabaseService {
     const hasCreds = Boolean(
       url &&
       !url.includes('YOUR_PROJECT_ID') &&
-      !url.includes(LEGACY_DEAD_HOST) &&
       anonKey &&
       !anonKey.includes('YOUR_SUPABASE_ANON_KEY')
     );
@@ -87,32 +89,27 @@ class SupabaseService {
       if (hasStorage) {
         url = localStorage.getItem(CONFIG_KEY_URL);
         anonKey = localStorage.getItem(CONFIG_KEY_ANON);
-        // Bersihkan URL lama yang sudah tidak aktif di DNS agar tidak memicu Failed to fetch
-        if (url && url.includes(LEGACY_DEAD_HOST)) {
-          localStorage.removeItem(CONFIG_KEY_URL);
-          localStorage.removeItem(CONFIG_KEY_ANON);
-          url = null;
-          anonKey = null;
-        }
       }
     } catch (e) {
       console.warn('Penyimpanan lokal tidak dapat diakses:', e);
     }
 
     return {
-      url: (url || DEFAULT_URL).trim(),
+      url: normalizeSupabaseUrl(url || DEFAULT_URL),
       anonKey: (anonKey || DEFAULT_ANON_KEY).trim()
     };
   }
 
   saveConfig(url, anonKey) {
     this.connectionFailed = false;
+    const cleanUrl = normalizeSupabaseUrl(url);
+    const cleanKey = (anonKey || '').trim();
     if (typeof localStorage !== 'undefined') {
       try {
-        if (url) localStorage.setItem(CONFIG_KEY_URL, url.trim());
+        if (cleanUrl) localStorage.setItem(CONFIG_KEY_URL, cleanUrl);
         else localStorage.removeItem(CONFIG_KEY_URL);
 
-        if (anonKey) localStorage.setItem(CONFIG_KEY_ANON, anonKey.trim());
+        if (cleanKey) localStorage.setItem(CONFIG_KEY_ANON, cleanKey);
         else localStorage.removeItem(CONFIG_KEY_ANON);
       } catch (e) {
         console.error('Gagal menyimpan konfigurasi ke localStorage:', e);
@@ -127,7 +124,6 @@ class SupabaseService {
     return Boolean(
       url &&
       !url.includes('YOUR_PROJECT_ID') &&
-      !url.includes(LEGACY_DEAD_HOST) &&
       anonKey &&
       !anonKey.includes('YOUR_SUPABASE_ANON_KEY')
     );
