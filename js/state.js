@@ -163,10 +163,39 @@ class StateStore {
   }
 
   loadState() {
+    const normalizeOtomatis = (str) => {
+      if (typeof str !== 'string') return str;
+      return str
+        .replace(/Otomasi/g, 'Otomatis')
+        .replace(/otomasi/g, 'otomatis')
+        .replace(/Otomatis\+/g, 'Otomatis +')
+        .replace(/Otomatis\(/g, 'Otomatis (');
+    };
     try {
       const data = localStorage.getItem(STATE_KEY);
       if (data) {
-        return { ...defaultState, ...JSON.parse(data) };
+        const parsed = { ...defaultState, ...JSON.parse(data) };
+        if (Array.isArray(parsed.orders)) {
+          parsed.orders = parsed.orders.map(o => ({
+            ...o,
+            package: normalizeOtomatis(o.package),
+            itemTitle: normalizeOtomatis(o.itemTitle)
+          }));
+        }
+        if (Array.isArray(parsed.services)) {
+          parsed.services = parsed.services.map(s => ({
+            ...s,
+            spec: normalizeOtomatis(s.spec),
+            name: normalizeOtomatis(s.name)
+          }));
+        }
+        if (Array.isArray(parsed.transactions)) {
+          parsed.transactions = parsed.transactions.map(t => ({
+            ...t,
+            description: normalizeOtomatis(t.description)
+          }));
+        }
+        return parsed;
       }
     } catch (e) {
       console.warn('Gagal membaca data dari localStorage:', e);
@@ -208,7 +237,7 @@ class StateStore {
         // Utamakan data dari Supabase
         const existingMap = new Map();
         dbOrders.forEach(o => existingMap.set(o.id, o));
-        
+
         // Pertahankan order lokal jika belum ada di dbOrders
         this.state.orders.forEach(o => {
           if (!existingMap.has(o.id)) {
@@ -280,7 +309,7 @@ class StateStore {
   async createOrder(orderData) {
     const id = 'ORD-2026-' + Math.floor(1000 + Math.random() * 9000);
     const invoiceNumber = `INV/${new Date().toISOString().slice(0, 10).replace(/-/g, '')}/MC/${Math.floor(100 + Math.random() * 900)}`;
-    
+
     const newOrder = {
       id,
       date: new Date().toISOString(),

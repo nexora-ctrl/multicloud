@@ -51,7 +51,7 @@ export const whyChooseUs = [
   {
     icon: 'zap',
     title: 'Aktivasi Instan & Cepat',
-    desc: 'Sistem otomasi kami memastikan layanan cloud, API key, dan lisensi digital siap pakai tanpa menunggu lama.'
+    desc: 'Sistem otomatis kami memastikan layanan cloud, API key, dan lisensi digital siap pakai tanpa menunggu lama.'
   },
   {
     icon: 'layers',

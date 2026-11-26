@@ -124,8 +124,8 @@ export function openServiceDetailModal(service) {
         itemTitle: service.name,
         category: service.category,
         packageName: service.id === 'srv-vps-dedicated-xl'
-          ? 'Paket Dedicated XL + Otomatis+ PPN 11% (1 Bulan)'
-          : 'Paket Standar ' + service.priceUnit,
+            ? 'Paket Dedicated XL + Otomatis + PPN 11% (1 Bulan)'
+            : 'Paket Standar ' + service.priceUnit,
         amount: service.startingPrice,
         breakdown: service.id === 'srv-vps-dedicated-xl' ? {
           base: service.basePrice || 2600000,
@@ -173,7 +173,7 @@ export function openOrderModal({ itemTitle, category, packageName, amount, break
               <span>${formatRp(breakdown.base)}</span>
             </div>
             <div style="display: flex; justify-content: space-between;">
-              <span>Biaya Otomatis(Automation Fee):</span>
+              <span>Biaya Otomatis (Automation Fee):</span>
               <span>${formatRp(breakdown.automation)}</span>
             </div>
             <div style="display: flex; justify-content: space-between;">
