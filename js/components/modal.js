@@ -447,27 +447,26 @@ export function printInvoiceReceipt(order) {
       </style>
     </head>
     <body>
-      <div class="invoice-box">
+      <main class="invoice-box">
         <div class="no-print" style="margin-bottom: 1.5rem; display: flex; gap: 10px; justify-content: flex-end;">
-          <button onclick="window.print()" style="background: #2563eb; color: #fff; border: none; padding: 8px 18px; font-weight: 600; border-radius: 6px; cursor: pointer;">Cetak Sekarang (Print PDF)</button>
-          <button onclick="window.close()" style="background: #e2e8f0; color: #334155; border: none; padding: 8px 18px; font-weight: 600; border-radius: 6px; cursor: pointer;">Tutup</button>
+          <button type="button" onclick="window.print()" style="background: #2563eb; color: #fff; border: none; min-height: 44px; padding: 10px 18px; font-weight: 600; border-radius: 6px; cursor: pointer;">Cetak Sekarang (Print PDF)</button>
+          <button type="button" onclick="window.close()" style="background: #e2e8f0; color: #334155; border: none; min-height: 44px; padding: 10px 18px; font-weight: 600; border-radius: 6px; cursor: pointer;">Tutup</button>
         </div>
 
-        <div class="header">
+        <header class="header">
           <div>
-            <div class="brand">Multi<span>Cloud</span></div>
-            <div style="font-size: 13px; color: #64748b; margin-top: 4px;">PT Multi Cloud Digital Nusantara</div>
-            <div style="font-size: 13px; color: #64748b;">Gedung Cyber 2 Lantai 18, Jakarta Selatan 12950</div>
-            <div style="font-size: 13px; color: #64748b;">Surel: billing@multicloud.id | NPWP: 01.890.123.4-012.000</div>
+            <h1 class="brand" style="margin: 0; line-height: 1.2;">Multi<span>Cloud</span></h1>
+            <div style="font-size: 13px; color: #475569; margin-top: 4px;">PT Multi Cloud Digital Nusantara</div>
+            <div style="font-size: 13px; color: #475569;">Gedung Cyber 2 Lantai 18, Jakarta Selatan 12950</div>
+            <div style="font-size: 13px; color: #475569;">Surel: billing@multicloud.id | NPWP: 01.890.123.4-012.000</div>
           </div>
           <div class="inv-meta">
-            <h2>FAKTUR RESMI</h2>
             <div style="font-family: monospace; font-size: 15px; font-weight: 700; color: #334155;">${order.invoiceNumber || order.id}</div>
             <div style="margin-top: 8px;">
               <span class="badge-paid">LUNAS / TERVERIFIKASI</span>
             </div>
           </div>
-        </div>
+        </header>
 
         <table class="meta-table">
           <tr>
@@ -532,27 +531,10 @@ export function printInvoiceReceipt(order) {
           </div>
         </div>
 
-        <table class="item-table" style="margin-top: 1rem;">
-          <thead>
-            <tr>
-              <th>Tanggal Transaksi</th>
-              <th>Gerbang Pembayaran (Gateway)</th>
-              <th class="text-right">Nominal Lunas</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>${new Date(order.date || Date.now()).toLocaleDateString('id-ID', { year: 'numeric', month: 'numeric', day: 'numeric' })}</td>
-              <td>${order.paymentMethod || 'BCA'}</td>
-              <td class="text-right"><strong>${formatRp(order.amount)}</strong></td>
-            </tr>
-          </tbody>
-        </table>
-
         <div class="footer-note">
           
         </div>
-      </div>
+      </main>
       <script>
         window.onload = function() {
           // Siap cetak otomatis
