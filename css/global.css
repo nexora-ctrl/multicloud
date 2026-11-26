@@ -45,13 +45,30 @@ a {
   transition: color 0.15s ease;
 }
 
+a[href],
+button,
+summary,
+select,
+label[for],
+label:has(input),
+input[type="checkbox"],
+input[type="radio"],
+[role="button"],
+[role="tab"],
+[role="switch"] {
+  cursor: pointer;
+}
+
 button {
   font-family: inherit;
   font-size: inherit;
   border: none;
   background: none;
-  cursor: pointer;
-  outline: none;
+}
+
+:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
 }
 
 input, textarea, select {
@@ -102,6 +119,18 @@ code, pre {
 :focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Tabler Icon Base */

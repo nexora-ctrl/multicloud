@@ -54,6 +54,10 @@ export function renderNavbar(activeRoute = '/') {
                 <span>Dasbor Admin</span>
               </a>
             ` : ''}
+            <button class="btn btn-ghost btn-sm" id="desktop-logout-btn" type="button" title="Keluar dari sesi ${user.name}">
+              ${icons.logout('icon', 16, 2)}
+              <span>Keluar</span>
+            </button>
           ` : `
             <a href="#/login" class="btn btn-ghost btn-sm">Masuk</a>
             <a href="#/register" class="btn btn-primary btn-sm">Daftar</a>
@@ -175,6 +179,14 @@ export function setupNavbarEvents() {
   links?.forEach(link => {
     link.addEventListener('click', closeDrawer);
   });
+
+  const desktopLogoutBtn = document.getElementById('desktop-logout-btn');
+  if (desktopLogoutBtn) {
+    desktopLogoutBtn.onclick = () => {
+      store.logout();
+      window.location.hash = '#/login';
+    };
+  }
 
   const logoutBtn = document.getElementById('mobile-logout-btn');
   if (logoutBtn) {

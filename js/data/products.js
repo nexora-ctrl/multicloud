@@ -6,6 +6,7 @@
 export const productCategories = [
   { id: 'all', label: 'Semua Produk' },
   { id: 'ai-tools', label: 'Alat AI & Akses Resmi' },
+  { id: 'design-creative', label: 'Desain & Kreatif' },
   { id: 'cloud-hosting', label: 'Komputasi Awan & Hosting' },
   { id: 'api-services', label: 'Layanan API' },
   { id: 'developer-tools', label: 'Perkakas Pengembang' },
@@ -13,6 +14,70 @@ export const productCategories = [
 ];
 
 export const productsList = [
+  {
+    id: 'prod-canva-premium',
+    slug: 'canva-premium-pro-official',
+    category: 'design-creative',
+    name: 'Canva Premium (Canva Pro / Teams Resmi)',
+    tagline: 'Desain Grafis, Brand Kit, & Studio Konten Visual Profesional',
+    badge: 'Baru',
+    rating: null,
+    reviewsCount: 0,
+    shortDescription: 'Langganan resmi Canva Pro / Teams melalui undangan langsung ke surel pribadi Anda. Buka akses penuh pustaka aset visual Pro, penghapus latar belakang satu klik, dan Brand Kit dengan privasi proyek terjaga.',
+    fullDescription: 'Rancang materi publikasi media sosial, dek presentasi bisnis, dokumen cetak resolusi tinggi, hingga penyuntingan video singkat langsung dari peramban maupun aplikasi seluler. Layanan Canva Premium di MultiCloud diaktifkan melalui tautan undangan resmi ke alamat surel Canva pribadi Anda sehingga seluruh folder dan proyek desain tetap bersifat privat serta terpisah dari pengguna lain.',
+    price: 95000,
+    originalPrice: null,
+    pricePeriod: '/bulan',
+    icon: 'palette',
+    accentColor: '#2563eb',
+    isOfficialLicense: true,
+    packages: [
+      {
+        id: 'canva-1m',
+        name: '1 Bulan Resmi (Perorangan)',
+        price: 95000,
+        period: '1 Bulan',
+        note: 'Undangan resmi ke surel pribadi, ruang desain privat'
+      },
+      {
+        id: 'canva-12m',
+        name: '1 Tahun Resmi (Hemat Tahunan)',
+        price: 769000,
+        period: '12 Bulan',
+        note: 'Hemat Rp 371.000 dibanding tagihan bulanan + Garansi penuh 1 tahun'
+      }
+    ],
+    features: [
+      'Akses penuh pustaka foto stok, video, audio, font, dan templat berlisensi Pro',
+      'Penghapus latar belakang foto dan video otomatis dalam satu klik (Background Remover)',
+      'Pengubah ukuran kanvas lintas format media sosial secara cepat (Resize & Magic Switch)',
+      'Pengelolaan identitas merek terpusat melalui Brand Kit (logo, palet warna, dan tipografi kustom)',
+      'Ekspor berkas resolusi tinggi: PNG latar transparan, SVG vektor, PDF Cetak CMYK, dan video MP4 4K',
+      'Undangan resmi ke akun surel pribadi Anda dengan ruang kerja dan folder desain privat'
+    ],
+    specifications: [
+      { key: 'Penerbit Piranti Lunak', value: 'Canva Pty Ltd' },
+      { key: 'Skema Aktivasi', value: 'Tautan Undangan Resmi ke Surel Pribadi' },
+      { key: 'Privasi Proyek', value: 'Desain & Folder Pribadi (Tidak Terlihat Anggota Lain)' },
+      { key: 'Penyimpanan Awan', value: 'Penyimpanan Awan Canva Pro hingga 1 TB' },
+      { key: 'Dukungan Perangkat', value: 'Peramban Web, Windows, macOS, Android, iOS' },
+      { key: 'Jaminan Layanan', value: 'Garansi Penuh Sesuai Durasi Langganan (1 Bulan / 1 Tahun)' }
+    ],
+    faq: [
+      {
+        q: 'Apakah proyek desain saya dapat dilihat oleh anggota atau pengguna lain?',
+        a: 'Tidak. Seluruh proyek desain yang tidak Anda bagikan secara manual tetap tersimpan di ruang pribadi akun Anda dan tidak dapat dibuka oleh anggota lain.'
+      },
+      {
+        q: 'Apakah saya perlu memberikan kata sandi akun Canva saya?',
+        a: 'Tidak pernah. Proses aktivasi dilakukan melalui tautan undangan resmi yang dikirim ke alamat surel Anda. Anda cukup membuka tautan tersebut selagi masuk pada akun Canva milik sendiri.'
+      },
+      {
+        q: 'Bagaimana nasib desain lama di akun Canva pribadi saya?',
+        a: 'Seluruh desain lama pada akun pribadi Anda tetap aman dan utuh. Anda juga dapat menyalin atau memindahkan desain antar-ruang kerja kapan saja.'
+      }
+    ]
+  },
   {
     id: 'prod-cursor-pro',
     slug: 'cursor-ai-pro-official',
@@ -116,17 +181,18 @@ export const productsList = [
     badge: 'Terlaris',
     rating: 4.9,
     reviewsCount: 512,
-    shortDescription: 'Langganan resmi OpenAI ChatGPT Plus dengan fitur mutakhir: ruang kerja kanvas, pembuatan GPT kustom, dan generator gambar DALL-E 3.',
-    fullDescription: 'Akses premium resmi ke layanan kecerdasan buatan terpopuler di dunia. Nikmati interaksi percakapan suara alami secara waktu nyata, kanvas interaktif untuk berkolaborasi dalam penulisan dokumen dan koding, serta batas penggunaan GPT-4o yang lebih tinggi.',
-    price: 325000,
-    originalPrice: 360000,
+    shortDescription: 'Langganan resmi OpenAI ChatGPT Plus seharga Rp 100.000/bulan dengan ruang kerja kanvas, pembuatan GPT kustom, dan generator gambar DALL-E 3.',
+    fullDescription: 'Akses resmi ke layanan kecerdasan buatan OpenAI ChatGPT Plus dengan tarif terjangkau Rp 100.000 per bulan. Nikmati interaksi percakapan suara alami secara waktu nyata, ruang kerja kanvas interaktif untuk kolaborasi penulisan dokumen dan koding, analisis berkas data, serta kuota penggunaan model GPT-4o yang jauh lebih lega dibandingkan versi gratis.',
+    price: 100000,
+    originalPrice: null,
     pricePeriod: '/bulan',
-    icon: 'robot',
-    accentColor: '#10b981',
+    icon: 'messages',
+    accentColor: '#2563eb',
     isOfficialLicense: true,
     packages: [
-      { id: 'gpt-1m', name: '1 Bulan Perorangan', price: 325000, period: '1 Bulan', note: 'Aktivasi langsung ke akun OpenAI Anda' },
-      { id: 'gpt-3m', name: '3 Bulan Pro', price: 935000, period: '3 Bulan', note: 'Hemat Rp 40.000 + Garansi Penuh' }
+      { id: 'gpt-1m', name: '1 Bulan Plus', price: 100000, period: '1 Bulan', note: 'Aktivasi resmi ke akun OpenAI Anda (Rp 100.000/bulan)' },
+      { id: 'gpt-3m', name: '3 Bulan Plus', price: 300000, period: '3 Bulan', note: 'Langganan penuh 3 bulan berturut-turut + Garansi Penuh' },
+      { id: 'gpt-12m', name: '1 Tahun Plus', price: 1200000, period: '12 Bulan', note: 'Langganan penuh 12 bulan + Faktur Resmi MultiCloud' }
     ],
     features: [
       'Akses prioritas model GPT-4o tanpa hambatan jam sibuk',

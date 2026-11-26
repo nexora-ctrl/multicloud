@@ -261,7 +261,7 @@ function renderAdminTabContent(tab, state) {
                   <tr>
                     <td><strong>${p.name}</strong></td>
                     <td><span class="badge badge-outline">${p.category}</span></td>
-                    <td><span class="badge ${p.badge === 'Terlaris' ? 'badge-bestseller' : 'badge-popular'}">${p.badge}</span></td>
+                    <td><span class="badge ${p.badge === 'Terlaris' ? 'badge-bestseller' : p.badge === 'Baru' ? 'badge-new' : 'badge-popular'}">${p.badge}</span></td>
                     <td>
                       ${p.isOfficialLicense ? `
                         <span class="badge badge-success">${icons.shieldCheck('icon', 12, 2)} Resmi</span>

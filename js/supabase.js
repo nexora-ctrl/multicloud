@@ -1,18 +1,44 @@
 /**
  * MultiCloud - Konfigurasi & Klien Basis Data Supabase
- * Mendukung koneksi langsung ke Supabase PostgreSQL via Supabase JS SDK.
- * Aman dijalankan di seluruh lingkungan peramban dan server Laragon.
+ * Mendukung koneksi ke Supabase PostgreSQL via Supabase JS SDK
+ * sekaligus penyimpanan akun lokal persisten saat berjalan tanpa peladen Supabase aktif.
  */
 
 const CONFIG_KEY_URL = 'multicloud_supabase_url';
 const CONFIG_KEY_ANON = 'multicloud_supabase_anon_key';
+const USERS_STORAGE_KEY = 'multicloud_registered_users_v1';
+const LEGACY_DEAD_HOST = 'hzamkkknabduqmdivcqd.supabase.co';
 
-const DEFAULT_URL = 'https://hzamkkknabduqmdivcqd.supabase.co';
-const DEFAULT_ANON_KEY = 'sb_publishable_4iMAn_pkRlm1m6uN7eAX5w_ab20R6w5';
+const DEFAULT_URL = '';
+const DEFAULT_ANON_KEY = '';
+
+function isNetworkFetchError(err) {
+  if (!err) return false;
+  const msg = String(err.message || err || '').toLowerCase();
+  const name = String(err.name || '').toLowerCase();
+  return (
+    name.includes('retryablefetch') ||
+    msg.includes('failed to fetch') ||
+    msg.includes('fetch failed') ||
+    msg.includes('networkerror') ||
+    msg.includes('load failed') ||
+    msg.includes('enotfound')
+  );
+}
+
+function buildAvatarInitials(fullName, email) {
+  const source = (fullName || email || 'MC').trim();
+  const parts = source.split(/\s+/).filter(Boolean);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return source.slice(0, 2).toUpperCase() || 'MC';
+}
 
 class SupabaseService {
   constructor() {
     this.client = null;
+    this.connectionFailed = false;
     this.initClient();
   }
 
@@ -24,22 +50,33 @@ class SupabaseService {
       if (hasStorage) {
         url = localStorage.getItem(CONFIG_KEY_URL);
         anonKey = localStorage.getItem(CONFIG_KEY_ANON);
+        // Bersihkan URL lama yang sudah tidak aktif di DNS agar tidak memicu Failed to fetch
+        if (url && url.includes(LEGACY_DEAD_HOST)) {
+          localStorage.removeItem(CONFIG_KEY_URL);
+          localStorage.removeItem(CONFIG_KEY_ANON);
+          url = null;
+          anonKey = null;
+        }
       }
     } catch (e) {
       console.warn('Penyimpanan lokal tidak dapat diakses:', e);
     }
 
     return {
-      url: url || DEFAULT_URL,
-      anonKey: anonKey || DEFAULT_ANON_KEY
+      url: (url || DEFAULT_URL).trim(),
+      anonKey: (anonKey || DEFAULT_ANON_KEY).trim()
     };
   }
 
   saveConfig(url, anonKey) {
+    this.connectionFailed = false;
     if (typeof localStorage !== 'undefined') {
       try {
         if (url) localStorage.setItem(CONFIG_KEY_URL, url.trim());
+        else localStorage.removeItem(CONFIG_KEY_URL);
+
         if (anonKey) localStorage.setItem(CONFIG_KEY_ANON, anonKey.trim());
+        else localStorage.removeItem(CONFIG_KEY_ANON);
       } catch (e) {
         console.error('Gagal menyimpan konfigurasi ke localStorage:', e);
       }
@@ -48,8 +85,15 @@ class SupabaseService {
   }
 
   isConfigured() {
+    if (this.connectionFailed) return false;
     const { url, anonKey } = this.getConfig();
-    return url && !url.includes('YOUR_PROJECT_ID') && anonKey && !anonKey.includes('YOUR_SUPABASE_ANON_KEY');
+    return Boolean(
+      url &&
+      !url.includes('YOUR_PROJECT_ID') &&
+      !url.includes(LEGACY_DEAD_HOST) &&
+      anonKey &&
+      !anonKey.includes('YOUR_SUPABASE_ANON_KEY')
+    );
   }
 
   async initClient() {
@@ -58,7 +102,7 @@ class SupabaseService {
       try {
         const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
         this.client = createClient(url, anonKey);
-        console.log('[MultiCloud] Terhubung ke basis data Supabase:', url);
+        console.log('[MultiCloud] Klien Supabase siap:', url);
       } catch (err) {
         console.warn('[MultiCloud] Gagal menginisialisasi klien Supabase:', err);
         this.client = null;
@@ -68,42 +112,127 @@ class SupabaseService {
     }
   }
 
+  getLocalUsers() {
+    if (typeof localStorage === 'undefined') return [];
+    try {
+      const raw = localStorage.getItem(USERS_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      console.warn('Gagal membaca daftar akun lokal:', e);
+      return [];
+    }
+  }
+
+  saveLocalUsers(users) {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+    } catch (e) {
+      console.error('Gagal menyimpan daftar akun lokal:', e);
+    }
+  }
+
+  registerLocalUser(email, password, fullName) {
+    const normalizedEmail = email.trim().toLowerCase();
+    const cleanName = fullName.trim();
+    const users = this.getLocalUsers();
+
+    if (
+      normalizedEmail === 'admin@multicloud.id' ||
+      users.some(u => (u.email || '').toLowerCase() === normalizedEmail)
+    ) {
+      return {
+        success: false,
+        message: 'Alamat surel ini sudah terdaftar. Silakan masuk melalui halaman Masuk.'
+      };
+    }
+
+    const nowIso = new Date().toISOString();
+    const newRecord = {
+      id: 'usr_' + Date.now().toString(36),
+      name: cleanName,
+      email: normalizedEmail,
+      password,
+      role: 'user',
+      company: 'Pribadi',
+      phone: '',
+      joinedDate: nowIso.slice(0, 10),
+      created_at: nowIso,
+      avatar: buildAvatarInitials(cleanName, normalizedEmail)
+    };
+
+    users.unshift(newRecord);
+    this.saveLocalUsers(users);
+
+    const { password: _omitted, ...publicUser } = newRecord;
+    return {
+      success: true,
+      needsConfirmation: false,
+      user: publicUser,
+      message: 'Pendaftaran berhasil! Akun MultiCloud Anda telah aktif.'
+    };
+  }
+
   /**
-   * Mengambil daftar profil pelanggan terdaftar dari Supabase
+   * Mengambil daftar profil pelanggan terdaftar (Supabase atau Lokal)
    */
   async getCustomers() {
-    if (this.client) {
+    const localAsProfiles = this.getLocalUsers().map(u => ({
+      id: u.id,
+      full_name: u.name,
+      email: u.email,
+      company: u.company || 'Pribadi',
+      role: u.role || 'user',
+      created_at: u.created_at || u.joinedDate
+    }));
+
+    if (this.client && !this.connectionFailed) {
       try {
         const { data, error } = await this.client
           .from('profiles')
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (!error && data) {
-          return data;
+        if (error && isNetworkFetchError(error)) {
+          this.connectionFailed = true;
+        } else if (!error && data) {
+          const map = new Map();
+          data.forEach(row => map.set((row.email || '').toLowerCase(), row));
+          localAsProfiles.forEach(row => {
+            if (!map.has(row.email.toLowerCase())) {
+              map.set(row.email.toLowerCase(), row);
+            }
+          });
+          return Array.from(map.values());
         }
       } catch (e) {
+        if (isNetworkFetchError(e)) this.connectionFailed = true;
         console.warn('[MultiCloud] Gagal mengambil data profiles dari Supabase:', e);
       }
     }
-    return null;
+
+    return localAsProfiles.length > 0 ? localAsProfiles : null;
   }
 
   /**
    * Mengambil daftar produk dari basis data Supabase
    */
   async getProducts() {
-    if (this.client) {
+    if (this.client && !this.connectionFailed) {
       try {
         const { data, error } = await this.client
           .from('products')
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (!error && data && data.length > 0) {
+        if (error && isNetworkFetchError(error)) {
+          this.connectionFailed = true;
+        } else if (!error && data && data.length > 0) {
           return data;
         }
       } catch (e) {
+        if (isNetworkFetchError(e)) this.connectionFailed = true;
         console.warn('[MultiCloud] Gagal mengambil data products dari Supabase:', e);
       }
     }
@@ -114,17 +243,20 @@ class SupabaseService {
    * Mengambil daftar transaksi dari Supabase
    */
   async getTransactions() {
-    if (this.client) {
+    if (this.client && !this.connectionFailed) {
       try {
         const { data, error } = await this.client
           .from('transactions')
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (!error && data) {
+        if (error && isNetworkFetchError(error)) {
+          this.connectionFailed = true;
+        } else if (!error && data) {
           return data;
         }
       } catch (e) {
+        if (isNetworkFetchError(e)) this.connectionFailed = true;
         console.warn('[MultiCloud] Gagal mengambil transaksi dari Supabase:', e);
       }
     }
@@ -132,13 +264,16 @@ class SupabaseService {
   }
 
   async getOrders() {
-    if (this.client) {
+    if (this.client && !this.connectionFailed) {
       try {
         const { data, error } = await this.client
           .from('orders')
           .select('*')
           .order('created_at', { ascending: false });
-        if (!error && data && data.length > 0) {
+
+        if (error && isNetworkFetchError(error)) {
+          this.connectionFailed = true;
+        } else if (!error && data && data.length > 0) {
           return data.map(item => ({
             id: item.id,
             invoiceNumber: item.invoice_number,
@@ -154,6 +289,7 @@ class SupabaseService {
           }));
         }
       } catch (e) {
+        if (isNetworkFetchError(e)) this.connectionFailed = true;
         console.warn('[MultiCloud] Terjadi kendala saat membaca tabel orders di Supabase:', e);
       }
     }
@@ -161,7 +297,7 @@ class SupabaseService {
   }
 
   async createOrder(order) {
-    if (this.client) {
+    if (this.client && !this.connectionFailed) {
       try {
         const payload = {
           id: order.id,
@@ -177,24 +313,22 @@ class SupabaseService {
           license_key: order.licenseKey || 'Sedang diverifikasi'
         };
 
-        const { data, error } = await this.client
+        const { error } = await this.client
           .from('orders')
           .insert([payload])
           .select();
 
-        if (error) {
-          console.error('[MultiCloud] Galat simpan pesanan Supabase:', error);
-        } else {
-          console.log('[MultiCloud] Pesanan berhasil disimpan ke Supabase:', data);
+        if (error && isNetworkFetchError(error)) {
+          this.connectionFailed = true;
         }
       } catch (e) {
-        console.warn('[MultiCloud] Eksepsi saat menyimpan pesanan ke Supabase:', e);
+        if (isNetworkFetchError(e)) this.connectionFailed = true;
       }
     }
   }
 
   async updateOrderStatus(orderId, status, licenseKey) {
-    if (this.client) {
+    if (this.client && !this.connectionFailed) {
       try {
         const updateData = { status, updated_at: new Date().toISOString() };
         if (licenseKey) updateData.license_key = licenseKey;
@@ -204,13 +338,11 @@ class SupabaseService {
           .update(updateData)
           .eq('id', orderId);
 
-        if (error) {
-          console.error('[MultiCloud] Gagal memperbarui status pesanan di Supabase:', error);
-        } else {
-          console.log('[MultiCloud] Status pesanan berhasil diperbarui di Supabase:', orderId);
+        if (error && isNetworkFetchError(error)) {
+          this.connectionFailed = true;
         }
       } catch (e) {
-        console.warn('[MultiCloud] Kendala saat update pesanan di Supabase:', e);
+        if (isNetworkFetchError(e)) this.connectionFailed = true;
       }
     }
   }
@@ -219,57 +351,91 @@ class SupabaseService {
    * Otentikasi Masuk Pengguna Biasa
    */
   async authenticateUser(email, password) {
-    if (this.client) {
+    const normalizedEmail = (email || '').trim().toLowerCase();
+
+    if (!normalizedEmail || !password) {
+      return {
+        success: false,
+        message: 'Mohon isi alamat surel dan kata sandi Anda.'
+      };
+    }
+
+    if (this.client && !this.connectionFailed) {
       try {
         const { data, error } = await this.client.auth.signInWithPassword({
-          email,
+          email: normalizedEmail,
           password
         });
 
         if (error) {
-          // Periksa apakah kendala karena surel belum dikonfirmasi
-          if (error.message && error.message.toLowerCase().includes('email not confirmed')) {
-            return {
-              success: false,
-              message: 'Alamat surel belum dikonfirmasi. Periksa kotak masuk/spam surel Anda, atau matikan "Confirm email" di pengaturan Supabase Auth.'
-            };
+          if (isNetworkFetchError(error)) {
+            this.connectionFailed = true;
+          } else {
+            if (error.message && error.message.toLowerCase().includes('email not confirmed')) {
+              return {
+                success: false,
+                message: 'Alamat surel belum dikonfirmasi. Periksa kotak masuk/spam surel Anda, atau nonaktifkan opsi Confirm Email di pengaturan Supabase Auth.'
+              };
+            }
+            // Cek juga apabila akun terdaftar di penyimpanan lokal sebelum menolak
+            const localFallback = this.getLocalUsers().find(u => (u.email || '').toLowerCase() === normalizedEmail);
+            if (!localFallback) {
+              return {
+                success: false,
+                message: error.message === 'Invalid login credentials'
+                  ? 'Alamat surel atau kata sandi salah. Pastikan Anda sudah mendaftar.'
+                  : (error.message || 'Gagal masuk ke akun.')
+              };
+            }
           }
-          return {
-            success: false,
-            message: error.message === 'Invalid login credentials' 
-              ? 'Alamat surel atau kata sandi salah. Pastikan Anda sudah mendaftar dan mengonfirmasi surel.'
-              : (error.message || 'Gagal masuk akun.')
-          };
-        }
-
-        if (data && data.user) {
+        } else if (data && data.user) {
           const { data: profile } = await this.client
             .from('profiles')
             .select('*')
-            .eq('email', email)
+            .eq('email', normalizedEmail)
             .single();
 
+          const resolvedName = profile?.full_name || data.user.user_metadata?.full_name || normalizedEmail.split('@')[0];
           return {
             success: true,
             user: {
               id: data.user.id,
-              name: profile?.full_name || data.user.user_metadata?.full_name || email.split('@')[0],
+              name: resolvedName,
               email: data.user.email,
               role: profile?.role || 'user',
               company: profile?.company || 'Pribadi',
               phone: profile?.phone || '',
               joinedDate: data.user.created_at?.slice(0, 10) || new Date().toISOString().slice(0, 10),
-              avatar: 'US'
+              avatar: buildAvatarInitials(resolvedName, data.user.email)
             }
           };
         }
       } catch (err) {
-        console.warn('[MultiCloud] Eksepsi otentikasi Supabase:', err);
+        if (isNetworkFetchError(err)) {
+          this.connectionFailed = true;
+        }
+        console.warn('[MultiCloud] Eksepsi otentikasi Supabase, memeriksa akun lokal:', err);
       }
     }
 
-    // Akun demo jika Supabase offline
-    if (email === 'ahmad.fauzan@devstudio.id' && password === 'demo12345') {
+    // Periksa daftar pengguna yang mendaftar secara lokal
+    const localUser = this.getLocalUsers().find(u => (u.email || '').toLowerCase() === normalizedEmail);
+    if (localUser) {
+      if (localUser.password !== password) {
+        return {
+          success: false,
+          message: 'Kata sandi yang Anda masukkan salah. Silakan coba kembali.'
+        };
+      }
+      const { password: _omitted, ...publicUser } = localUser;
+      return {
+        success: true,
+        user: publicUser
+      };
+    }
+
+    // Akun contoh (demo) bawaan
+    if (normalizedEmail === 'ahmad.fauzan@devstudio.id' && password === 'demo12345') {
       return {
         success: true,
         user: {
@@ -287,7 +453,7 @@ class SupabaseService {
 
     return {
       success: false,
-      message: 'Akun tidak ditemukan atau kata sandi tidak cocok.'
+      message: 'Akun belum ditemukan atau kata sandi salah. Silakan daftar akun baru terlebih dahulu.'
     };
   }
 
@@ -295,21 +461,64 @@ class SupabaseService {
    * Registrasi Pengguna Baru
    */
   async registerUser(email, password, fullName) {
-    if (this.client) {
+    const cleanName = (fullName || '').trim();
+    const normalizedEmail = (email || '').trim().toLowerCase();
+
+    if (cleanName.length < 2) {
+      return {
+        success: false,
+        message: 'Mohon isi nama lengkap minimal 2 karakter.'
+      };
+    }
+
+    if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return {
+        success: false,
+        message: 'Mohon masukkan format alamat surel yang valid.'
+      };
+    }
+
+    if (!password || password.length < 6) {
+      return {
+        success: false,
+        message: 'Kata sandi wajib terdiri atas minimal 6 karakter.'
+      };
+    }
+
+    if (this.client && !this.connectionFailed) {
       try {
         const { data, error } = await this.client.auth.signUp({
-          email,
+          email: normalizedEmail,
           password,
           options: {
-            data: { full_name: fullName }
+            data: { full_name: cleanName }
           }
         });
 
         if (error) {
-          if (error.message && error.message.toLowerCase().includes('rate limit')) {
+          if (isNetworkFetchError(error)) {
+            console.warn('[MultiCloud] Peladen Supabase tidak dapat dijangkau, beralih ke pendaftaran lokal.');
+            this.connectionFailed = true;
+            return this.registerLocalUser(normalizedEmail, password, cleanName);
+          }
+
+          const lowerMsg = (error.message || '').toLowerCase();
+          if (lowerMsg.includes('already registered')) {
             return {
               success: false,
-              message: 'Batas pengiriman surel Supabase terlampaui. Silakan matikan "Confirm email" di Supabase Dashboard (Authentication > Providers > Email) agar pendaftaran bisa langsung aktif tanpa verifikasi surel.'
+              message: 'Alamat surel ini sudah terdaftar. Silakan masuk melalui halaman Masuk.'
+            };
+          }
+          if (lowerMsg.includes('rate limit')) {
+            return {
+              success: false,
+              message: 'Batas pengiriman surel Supabase terlampaui. Nonaktifkan opsi Confirm Email di Supabase Dashboard (Authentication > Providers > Email) agar pendaftaran langsung aktif.'
+            };
+          }
+          if (lowerMsg.includes('password')) {
+            return {
+              success: false,
+              message: 'Kata sandi tidak memenuhi syarat keamanan (minimal 6 karakter).'
             };
           }
           return {
@@ -318,50 +527,76 @@ class SupabaseService {
           };
         }
 
-        // Simpan data profil ke tabel profiles
-        if (data.user) {
+        if (data?.user) {
           try {
             await this.client.from('profiles').insert([{
               auth_user_id: data.user.id,
-              email: email,
-              full_name: fullName,
+              email: normalizedEmail,
+              full_name: cleanName,
               role: 'user'
             }]);
           } catch (pe) {
-            console.warn('Profil sudah ada atau tersimpan otomatis:', pe);
+            console.warn('Profil sudah ada atau tersimpan otomatis oleh trigger:', pe);
           }
         }
 
-        // Cek apakah akun memerlukan konfirmasi email
-        const needsEmailConfirmation = data.user && (!data.session);
+        // Simpan salinan lokal agar tetap konsisten
+        const existingUsers = this.getLocalUsers();
+        if (!existingUsers.some(u => (u.email || '').toLowerCase() === normalizedEmail)) {
+          existingUsers.unshift({
+            id: data?.user?.id || ('usr_' + Date.now().toString(36)),
+            name: cleanName,
+            email: normalizedEmail,
+            password,
+            role: 'user',
+            company: 'Pribadi',
+            phone: '',
+            joinedDate: new Date().toISOString().slice(0, 10),
+            created_at: new Date().toISOString(),
+            avatar: buildAvatarInitials(cleanName, normalizedEmail)
+          });
+          this.saveLocalUsers(existingUsers);
+        }
 
+        const needsEmailConfirmation = Boolean(data?.user && !data?.session);
         return {
           success: true,
           needsConfirmation: needsEmailConfirmation,
-          user: data.user,
-          message: needsEmailConfirmation 
-            ? 'Pendaftaran berhasil! Tautan konfirmasi telah dikirim ke surel Anda. Harap klik tautan verifikasi di surel sebelum masuk (atau matikan "Confirm email" di Supabase).'
-            : 'Pendaftaran berhasil! Akun Anda aktif dan siap digunakan.'
+          user: {
+            id: data?.user?.id || ('usr_' + Date.now().toString(36)),
+            name: cleanName,
+            email: normalizedEmail,
+            role: 'user',
+            company: 'Pribadi',
+            phone: '',
+            joinedDate: new Date().toISOString().slice(0, 10),
+            avatar: buildAvatarInitials(cleanName, normalizedEmail)
+          },
+          message: needsEmailConfirmation
+            ? 'Pendaftaran berhasil! Tautan konfirmasi telah dikirim ke surel Anda. Silakan buka tautan tersebut sebelum masuk.'
+            : 'Pendaftaran berhasil! Akun Anda kini aktif dan siap digunakan.'
         };
       } catch (err) {
+        if (isNetworkFetchError(err)) {
+          this.connectionFailed = true;
+          return this.registerLocalUser(normalizedEmail, password, cleanName);
+        }
         return {
           success: false,
-          message: 'Terjadi kendala saat registrasi ke Supabase: ' + err.message
+          message: 'Terjadi kendala saat registrasi: ' + (err.message || 'Tidak diketahui')
         };
       }
     }
 
-    return {
-      success: true,
-      message: 'Pendaftaran lokal berhasil disimulasikan.'
-    };
+    return this.registerLocalUser(normalizedEmail, password, cleanName);
   }
 
   async authenticateAdmin(email, password) {
-    // 1. Validasi kredensial lokal bawaan
-    const isDefaultAdmin = (email === 'admin@multicloud.id' && password === 'admin12345') ||
-                           (email === 'admin@multicloud.id' && password === 'admin');
-    
+    const normalizedEmail = (email || '').trim().toLowerCase();
+    const isDefaultAdmin =
+      (normalizedEmail === 'admin@multicloud.id' && password === 'admin12345') ||
+      (normalizedEmail === 'admin@multicloud.id' && password === 'admin');
+
     if (isDefaultAdmin) {
       return {
         success: true,
@@ -376,19 +611,20 @@ class SupabaseService {
       };
     }
 
-    // 2. Jika Supabase terhubung, verifikasi dari Supabase Auth
-    if (this.client) {
+    if (this.client && !this.connectionFailed) {
       try {
         const { data: authData, error: authError } = await this.client.auth.signInWithPassword({
-          email,
+          email: normalizedEmail,
           password
         });
 
-        if (!authError && authData.user) {
+        if (authError && isNetworkFetchError(authError)) {
+          this.connectionFailed = true;
+        } else if (!authError && authData?.user) {
           const { data: profile } = await this.client
             .from('profiles')
             .select('*')
-            .eq('email', email)
+            .eq('email', normalizedEmail)
             .single();
 
           if (profile && profile.role === 'admin') {
@@ -406,7 +642,8 @@ class SupabaseService {
           }
         }
       } catch (err) {
-        console.warn('[MultiCloud] Otentikasi Supabase bermasalah, memeriksa kredensial lokal:', err);
+        if (isNetworkFetchError(err)) this.connectionFailed = true;
+        console.warn('[MultiCloud] Otentikasi Supabase bermasalah:', err);
       }
     }
 

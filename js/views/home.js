@@ -283,7 +283,7 @@ export function renderHomePage() {
             <div class="product-card">
               <div class="product-badges-row">
                 <div class="product-badge-group">
-                  <span class="badge ${prod.badge === 'Terlaris' ? 'badge-bestseller' : 'badge-popular'}">
+                  <span class="badge ${prod.badge === 'Terlaris' ? 'badge-bestseller' : prod.badge === 'Baru' ? 'badge-new' : 'badge-popular'}">
                     ${prod.badge}
                   </span>
                   ${prod.isOfficialLicense ? `
@@ -292,11 +292,15 @@ export function renderHomePage() {
                     </span>
                   ` : ''}
                 </div>
-                <div class="product-rating">
-                  ${icons.star('icon', 14, 2)}
-                  <span>${prod.rating}</span>
-                  <span class="product-rating-count">(${prod.reviewsCount} ulasan)</span>
-                </div>
+                ${prod.rating && prod.reviewsCount > 0 ? `
+                  <div class="product-rating">
+                    ${icons.star('icon', 14, 2)}
+                    <span>${prod.rating}</span>
+                    <span class="product-rating-count">(${prod.reviewsCount} ulasan)</span>
+                  </div>
+                ` : `
+                  <span class="product-rating-empty">Belum ada ulasan</span>
+                `}
               </div>
 
               <h3 class="product-title">

@@ -23,13 +23,13 @@
 .form-select,
 .form-textarea {
   width: 100%;
-  padding: 0.6875rem 0.875rem;
+  min-height: 44px;
+  padding: 0.625rem 0.875rem;
   font-size: 0.9375rem;
   background-color: var(--bg-surface);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  outline: none;
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
@@ -59,6 +59,79 @@
 .form-hint {
   font-size: 0.8125rem;
   color: var(--text-muted);
+}
+
+/* Password field with visibility toggle */
+.password-field-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-input {
+  padding-right: 3rem;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.password-toggle-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-surface-secondary);
+}
+
+/* Accessible Auth Feedback Banners */
+.auth-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  margin-bottom: 1.25rem;
+}
+
+.auth-alert .icon {
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.auth-alert-error {
+  background-color: var(--color-danger-subtle);
+  color: #b91c1c;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+[data-theme="dark"] .auth-alert-error {
+  color: #fca5a5;
+}
+
+.auth-alert-success {
+  background-color: var(--color-success-subtle);
+  color: #047857;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+[data-theme="dark"] .auth-alert-success {
+  color: #34d399;
+}
+
+.auth-alert-info {
+  background-color: var(--color-primary-subtle);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary-border);
 }
 
 /* Search input with icon */
@@ -98,6 +171,10 @@
 }
 
 .filter-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
@@ -105,19 +182,25 @@
   border: 1px solid var(--border-color);
   background-color: var(--bg-surface);
   color: var(--text-secondary);
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
   cursor: pointer;
 }
 
 .filter-pill:hover {
-  border-color: var(--border-color-hover);
+  border-color: var(--color-primary);
   color: var(--text-primary);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.filter-pill:active {
+  box-shadow: inset 0 2px 4px rgba(15, 23, 42, 0.12);
 }
 
 .filter-pill.active {
-  background-color: var(--color-primary);
-  border-color: var(--color-primary);
+  background-color: #2563eb;
+  border-color: #2563eb;
   color: #ffffff;
+  font-weight: 600;
 }
 
 /* Modal overlay & container */

@@ -96,6 +96,7 @@ VALUES
     ('cloud-hosting', 'Komputasi Awan & Hosting', 'Infrastruktur peladen awan berkinerja tinggi, keterandalan 99,99%, dan latensi rendah.', 'cloud', 'Kinerja Tinggi'),
     ('api-services', 'Layanan API', 'Gerbang API siap pakai untuk integrasi WhatsApp, inferensi AI, dan perkakas pengembang.', 'api', 'Ramah Pengembang'),
     ('ai-subscriptions', 'Alat AI & Langganan Resmi', 'Akses resmi dan lisensi asli perangkat lunak AI terkemuka untuk produktivitas koding dan tim.', 'sparkles', 'Lisensi Resmi'),
+    ('design-creative', 'Desain & Kreatif', 'Piranti lunak desain visual, penjenamaan merek, dan produksi konten kreatif berlisensi resmi.', 'palette', 'Lisensi Resmi'),
     ('digital-products', 'Produk Digital', 'Koleksi piranti lunak utilitas, perkakas pengembang, dan lisensi perusahaan.', 'package', 'Pengiriman Instan')
 ON CONFLICT (id) DO NOTHING;
 

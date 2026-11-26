@@ -15,7 +15,7 @@ export function openModal(htmlContent) {
   overlay.className = 'modal-overlay active';
   overlay.id = 'dynamic-modal-overlay';
   overlay.innerHTML = `
-    <div class="modal-card" id="modal-card-box" role="dialog" aria-modal="true">
+    <div class="modal-card" id="modal-card-box" role="dialog" aria-modal="true" aria-labelledby="modal-dialog-title">
       ${htmlContent}
     </div>
   `;
@@ -147,7 +147,7 @@ export function openOrderModal({ itemTitle, category, packageName, amount, break
   const content = `
     <div class="modal-header">
       <div>
-        <h3 class="modal-title">Konfirmasi Pemesanan</h3>
+        <h2 class="modal-title" id="modal-dialog-title">Konfirmasi Pemesanan</h2>
         <span style="font-size: 0.8125rem; color: var(--text-muted);">Sistem Pemesanan Resmi MultiCloud</span>
       </div>
       <button class="btn btn-ghost btn-sm modal-close-trigger" aria-label="Tutup">
@@ -212,7 +212,7 @@ export function openOrderModal({ itemTitle, category, packageName, amount, break
         </div>
 
         <div class="form-group">
-          <label class="form-label">Metode Pembayaran</label>
+          <label class="form-label" for="order-payment-method">Metode Pembayaran</label>
           <select class="form-select" id="order-payment-method">
             <option value="QRIS Instan">QRIS Instan (BCA, Mandiri, GoPay, OVO, ShopeePay)</option>
             <option value="BCA Virtual Account">BCA Virtual Account</option>

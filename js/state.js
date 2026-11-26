@@ -226,6 +226,17 @@ class StateStore {
   login(email, role = 'user', userData = null) {
     if (userData) {
       this.state.currentUser = userData;
+    } else if ((email || '').toLowerCase() === 'ahmad.fauzan@devstudio.id' && role === 'user') {
+      this.state.currentUser = {
+        id: 'usr_001',
+        name: 'Ahmad Fauzan',
+        email: 'ahmad.fauzan@devstudio.id',
+        role: 'user',
+        company: 'DevStudio Indonesia',
+        phone: '+62 812-3456-7890',
+        joinedDate: '2025-08-14',
+        avatar: 'AF'
+      };
     } else {
       this.state.currentUser = {
         id: role === 'admin' ? 'adm_001' : 'usr_' + Math.floor(100 + Math.random() * 900),

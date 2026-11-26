@@ -39,10 +39,11 @@ export function renderFooter() {
             </div>
           </div>
 
-          <!-- Kolom 3: Layanan API & Alat AI -->
+          <!-- Kolom 3: Layanan API, AI & Kreatif -->
           <div class="footer-col">
-            <h4 class="footer-group-title">API & Alat AI</h4>
+            <h4 class="footer-group-title">API, AI & Kreatif</h4>
             <div class="footer-links">
+              <a href="#/products/prod-canva-premium" class="footer-link">Canva Premium Resmi</a>
               <a href="#/products?category=ai-tools" class="footer-link">Cursor AI Pro</a>
               <a href="#/products?category=ai-tools" class="footer-link">Google Gemini Advanced</a>
               <a href="#/products?category=ai-tools" class="footer-link">ChatGPT Plus Resmi</a>

@@ -19,6 +19,7 @@ import { renderAuthPage, setupAuthPageEvents } from './views/auth.js';
 import { renderAdminLoginPage, setupAdminLoginPageEvents } from './views/admin-login.js';
 import { renderUserDashboard, setupUserDashboardEvents } from './views/dashboard-user.js';
 import { renderAdminDashboard, setupAdminDashboardEvents } from './views/dashboard-admin.js';
+import { productsList } from './data/products.js';
 import { store } from './state.js';
 
 export function handleRoute() {
@@ -51,11 +52,14 @@ export function handleRoute() {
     mainHtml = renderProductsPage(category);
     setupFn = setupProductsPageEvents;
     activeNavRoute = '/products';
+    document.title = 'Katalog Produk Digital & Canva Premium - MultiCloud';
   } else if (routePart.startsWith('/products/')) {
     const productId = routePart.replace('/products/', '');
+    const matchedProd = productsList.find(p => p.id === productId || p.slug === productId);
     mainHtml = renderProductDetailPage(productId);
     setupFn = () => setupProductDetailPageEvents(productId);
     activeNavRoute = '/products';
+    document.title = matchedProd ? `${matchedProd.name} - MultiCloud` : 'Produk Tidak Ditemukan - MultiCloud';
   } else if (routePart === '/pricing') {
     mainHtml = renderPricingPage();
     setupFn = setupPricingPageEvents;
@@ -76,14 +80,17 @@ export function handleRoute() {
     mainHtml = renderAuthPage('login');
     setupFn = setupAuthPageEvents;
     activeNavRoute = '/login';
+    document.title = 'Masuk ke Akun - MultiCloud';
   } else if (routePart === '/register') {
     mainHtml = renderAuthPage('register');
     setupFn = setupAuthPageEvents;
     activeNavRoute = '/register';
+    document.title = 'Pendaftaran Akun Baru - MultiCloud';
   } else if (routePart === '/forgot-password') {
     mainHtml = renderAuthPage('forgot');
     setupFn = setupAuthPageEvents;
     activeNavRoute = '/login';
+    document.title = 'Pemulihan Kata Sandi - MultiCloud';
   } else if (routePart === '/admin-login' || routePart === '/admin/login') {
     mainHtml = renderAdminLoginPage();
     setupFn = setupAdminLoginPageEvents;
