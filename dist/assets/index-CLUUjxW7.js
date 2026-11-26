@@ -527,13 +527,12 @@
           <div>
             <h1 class="brand" style="margin: 0; line-height: 1.2;">Multi<span>Cloud</span></h1>
             <div style="font-size: 13px; color: #475569; margin-top: 4px;">PT Multi Cloud Digital Nusantara</div>
-            <div style="font-size: 13px; color: #475569;">Gedung Cyber 2 Lantai 18, Jakarta Selatan 12950</div>
             <div style="font-size: 13px; color: #475569;">Surel: billing@multicloud.id | NPWP: 01.890.123.4-012.000</div>
           </div>
           <div class="inv-meta">
             <div style="font-family: monospace; font-size: 15px; font-weight: 700; color: #334155;">${e.invoiceNumber||e.id}</div>
             <div style="margin-top: 8px;">
-              <span class="badge-paid">LUNAS / TERVERIFIKASI</span>
+              <span class="badge-paid">LUNAS</span>
             </div>
           </div>
         </header>
@@ -549,7 +548,6 @@
             <td style="width: 50%; text-align: right;">
               <strong style="color: #475569; font-size: 12px; text-transform: uppercase;">Rincian Faktur:</strong><br>
               <span>Tanggal Penerbitan: ${new Date(e.date||Date.now()).toLocaleDateString(`id-ID`,{year:`numeric`,month:`long`,day:`numeric`})}</span><br>
-              <span>Kanal Pembayaran: ${e.paymentMethod||`BCA Virtual Account`}</span><br>
               <span>Status Lisensi: <strong>${e.licenseKey||`MC-LIC-VERIFIED-ACTIVE`}</strong></span>
             </td>
           </tr>
