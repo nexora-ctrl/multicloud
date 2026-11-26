@@ -123,8 +123,8 @@ export function openServiceDetailModal(service) {
       openOrderModal({
         itemTitle: service.name,
         category: service.category,
-        packageName: service.id === 'srv-vps-dedicated-xl' 
-          ? 'Paket Dedicated XL + Otomasi + PPN 11% (1 Bulan)' 
+        packageName: service.id === 'srv-vps-dedicated-xl'
+          ? 'Paket Dedicated XL + Otomasi + PPN 11% (1 Bulan)'
           : 'Paket Standar ' + service.priceUnit,
         amount: service.startingPrice,
         breakdown: service.id === 'srv-vps-dedicated-xl' ? {
@@ -550,8 +550,7 @@ export function printInvoiceReceipt(order) {
         </table>
 
         <div class="footer-note">
-          Faktur ini diterbitkan secara elektronik oleh sistem komputerisasi MultiCloud dan diakui secara sah tanpa tanda tangan basah.<br>
-          Terima kasih atas kepercayaan Anda bermitra bersama MultiCloud.
+          
         </div>
       </div>
       <script>
