@@ -419,15 +419,18 @@ export function printInvoiceReceipt(order) {
     <html lang="id">
     <head>
       <meta charset="UTF-8">
-      <title>Faktur Tagihan Resmi - ${order.invoiceNumber || order.id}</title>
+      <title>${(order.invoiceNumber || order.id || 'Invoice').replace(/\//g, '-')}</title>
       <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: #1e293b; padding: 2rem; margin: 0; background: #fff; }
-        .invoice-box { max-width: 800px; margin: auto; border: 1px solid #e2e8f0; padding: 2rem; border-radius: 8px; }
+        @page {
+          size: A4 portrait;
+          margin: 0;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: #1e293b; padding: 2rem; margin: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .invoice-box { max-width: 800px; margin: auto; border: 1px solid #e2e8f0; padding: 2rem; border-radius: 8px; box-sizing: border-box; }
         .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #3b82f6; padding-bottom: 1.5rem; margin-bottom: 2rem; }
         .brand { font-size: 24px; font-weight: 800; color: #2563eb; }
         .brand span { color: #0f172a; }
         .inv-meta { text-align: right; }
-        .inv-meta h2 { margin: 0 0 5px 0; font-size: 20px; color: #0f172a; }
         .meta-table { width: 100%; margin-bottom: 2rem; }
         .meta-table td { vertical-align: top; padding: 4px 0; font-size: 14px; }
         .item-table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; }
@@ -438,10 +441,18 @@ export function printInvoiceReceipt(order) {
         .summary-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
         .summary-row.total { font-size: 18px; font-weight: 800; border-top: 2px solid #0f172a; padding-top: 10px; margin-top: 5px; color: #2563eb; }
         .badge-paid { display: inline-block; background: #dcfce7; color: #15803d; border: 1px solid #86efac; padding: 6px 14px; font-weight: 700; border-radius: 9999px; font-size: 13px; text-transform: uppercase; }
-        .footer-note { border-top: 1px dashed #cbd5e1; padding-top: 1.5rem; font-size: 12px; color: #64748b; text-align: center; }
+        .footer-note { border-top: 1px dashed #cbd5e1; padding-top: 1.5rem; font-size: 12px; color: #475569; text-align: center; }
         @media print {
-          body { padding: 0; }
-          .invoice-box { border: none; }
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          .invoice-box {
+            max-width: 100%;
+            border: none;
+            border-radius: 0;
+            padding: 16mm 18mm;
+          }
           .no-print { display: none !important; }
         }
       </style>
